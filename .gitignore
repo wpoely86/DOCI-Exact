@@ -1,0 +1,17 @@
+*~
+*.o
+*.bak
+*.txt
+tags
+.gdb_history
+*.swp
+*.swo
+main
+main2D
+libprimme.a
+docs
+*.h5
+*.pdf
+*.png
+*.log
+*.pyc
