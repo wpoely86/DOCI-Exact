@@ -25,8 +25,6 @@ namespace helpers {
 class matrix;
 }
 
-using std::ostream;
-
 /**
  * @author Ward Poelmans
  * @date 09-08-2013\n\n
@@ -45,7 +43,7 @@ class SparseMatrix_CCS
     * @param output The stream to which you are writing (e.g. cout)
     * @param matrix_p de SparseMatrix_CCS you want to print
     */
-   friend ostream &operator<<(ostream &output,SparseMatrix_CCS &matrix_p);
+   friend std::ostream &operator<<(std::ostream &output,SparseMatrix_CCS &matrix_p);
 
    public:
 

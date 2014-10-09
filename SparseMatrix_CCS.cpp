@@ -171,7 +171,7 @@ void SparseMatrix_CCS::PrintRaw() const
  * @param matrix_p the matrix to print
  * @return the filled ostream (with the matrix)
  */
-ostream &operator<<(ostream &output,SparseMatrix_CCS &matrix_p)
+std::ostream &operator<<(std::ostream &output,SparseMatrix_CCS &matrix_p)
 {
    for(unsigned int i=0;i<matrix_p.m;i++)
       for(unsigned int k=matrix_p.row[i];k<matrix_p.row[i+1];k++)
