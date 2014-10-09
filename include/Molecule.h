@@ -28,9 +28,9 @@ class Molecule
 
       Molecule& operator=(Molecule &&);
 
-      double getT(int, int) const;
+      virtual double getT(int, int) const;
 
-      double getV(int, int, int, int) const;
+      virtual double getV(int, int, int, int) const;
 
       double get_nucl_rep() const;
 
@@ -51,7 +51,7 @@ class Molecule
       //! nuclear repulsion (const part to add to the energy)
       double nucl_rep;
 
-      //! the size of the single particles space
+      //! the size of the single particles space (without spin)
       unsigned int n_sp;
 };
 

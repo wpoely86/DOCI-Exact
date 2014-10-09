@@ -178,7 +178,7 @@ double Molecule::get_nucl_rep() const
 }
 
 /**
- * @return size of the single particle basis
+ * @return size of the single particle basis (without spin)
  */
 unsigned int Molecule::get_n_sp() const
 {

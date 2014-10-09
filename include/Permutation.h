@@ -26,11 +26,11 @@ class Permutation
     public:
         Permutation(unsigned int);
 
-        mybitset next();
+        virtual mybitset next();
 
-        mybitset get() const;
+        virtual mybitset get() const;
 
-        void reset();
+        virtual void reset();
 
     private:
 
