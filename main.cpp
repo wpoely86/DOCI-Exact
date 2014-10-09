@@ -17,20 +17,56 @@ along with Hubbard-GPU.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include <iostream>
-#include <algorithm>
-#include <memory>
 #include <sstream>
 #include <iomanip>
 #include <boost/timer.hpp>
 #include <getopt.h>
 
-using namespace std;
+#include "Permutation.h"
+#include "Molecule.h"
+#include "Hamiltonian.h"
 
 int main(int argc, char **argv)
 {
-    int L = 4; // number of sites
-    int Nu = 2; // number of up electrons
-    int Nd = 2; // number of down electrons
+    using std::cout;
+    using std::endl;
+
+    cout.precision(10);
+
+    std::string integralsfile = "mo-integrals.h5";
+
+    struct option long_options[] =
+    {
+        {"integrals",  required_argument, 0, 'i'},
+        {"help",  no_argument, 0, 'h'},
+        {0, 0, 0, 0}
+    };
+
+    int i,j;
+
+    while( (j = getopt_long (argc, argv, "hi:", long_options, &i)) != -1)
+        switch(j)
+        {
+            case 'h':
+            case '?':
+                cout << "Usage: " << argv[0] << " [OPTIONS]\n"
+                    "\n"
+                    "    -i, --integrals=integrals-file  Set the input integrals file\n"
+                    "    -h, --help                      Display this help\n"
+                    "\n";
+                return 0;
+                break;
+            case 'i':
+                integralsfile = optarg;
+                break;
+        }
+
+    cout << "Reading: " << integralsfile << endl;
+
+    Molecule mol(integralsfile);
+
+
+
 
     return 0;
 }
