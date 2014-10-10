@@ -1,8 +1,8 @@
-/* Copyright (C) 2012-2014  Ward Poelmans
+/* Copyright (C) 2014  Ward Poelmans
 
-This file is part of Hubbard-GPU.
+This file is part of DOCI-Exact.
 
-Hubbard-GPU is free software: you can redistribute it and/or modify
+Doci-Exact is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
@@ -25,6 +25,19 @@ along with Hubbard-GPU.  If not, see <http://www.gnu.org/licenses/>.
 #include "Permutation.h"
 #include "Molecule.h"
 #include "Hamiltonian.h"
+
+/**
+ * @mainpage
+ * This is an exact DOCI solver by means of a lanczos solver. We build the
+ * Hamiltonian and store it as a sparse matrix (in Column Compressed Format).
+ * The Permutation object generates the next basis state on the fly.
+ * The Molecule object holds the atomic/molecular integrals to use.
+ *
+ * @author Ward Poelmans <wpoely86@gmail.com>
+ * @version   0.1
+ * @date      2014
+ * @copyright GNU Public License v3
+ */
 
 int main(int argc, char **argv)
 {

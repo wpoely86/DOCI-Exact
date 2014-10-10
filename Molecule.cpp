@@ -139,11 +139,11 @@ Molecule& Molecule::operator=(Molecule &&orig)
 }
 
 /**
- * Get the matrix element <a|T|b> where T is the
+ * Get the matrix element \f$<a|\hat T|b>\f$ where T is the
  * one body operator
  * @param a the first sp index
  * @param b the second sp index
- * @return <a|T|b>
+ * @return \f$<a|\hat T|b>\f$
  */
 double Molecule::getT(int a, int b) const
 {
@@ -153,13 +153,13 @@ double Molecule::getT(int a, int b) const
 }
 
 /**
- * Get the matrix element <ab|V|cd> where V is the
+ * Get the matrix element \f$<ab|\hat V|cd>\f$ where V is the
  * two body operator
  * @param a the first sp index
  * @param b the second sp index
  * @param c the thirth sp index
  * @param d the fourth sp index
- * @return <ab|V|cd>
+ * @return \f$<ab|\hat V|cd>\f$
  */
 double Molecule::getV(int a, int b, int c, int d) const
 {
