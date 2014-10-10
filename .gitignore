@@ -6,8 +6,7 @@ tags
 .gdb_history
 *.swp
 *.swo
-main
-main2D
+doci
 libprimme.a
 docs
 *.h5

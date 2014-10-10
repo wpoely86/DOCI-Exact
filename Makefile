@@ -10,10 +10,10 @@ CUDASRC=
 
 OBJ=$(CPPSRC:.cpp=.o) $(CUDASRC:.cu=.o)
 
-EXE=main
+EXE=doci
 
 CC=gcc
-CXX=clang++ #-fsanitize=address -fno-omit-frame-pointer
+CXX=clang++
 
 CFLAGS=-Iinclude -g -Wall -O2 -march=native -std=c++11 # -Wno-sign-compare -Wunknown-pragmas #-fopenmp # -DNDEBUG
 CPPFLAGS=$(CFLAGS)
@@ -38,14 +38,14 @@ LIBS=-lblas -llapack -larpack -lhdf5
 #	$(CXX) -c $(CPPFLAGS) $(INCLUDE) $(@:.o=.cu.ii) -o $@
 
 
-all: main
+all: $(EXE)
 
-main: $(OBJ) main.o
-	$(CXX) $(LDFLAGS) -o main $(OBJ) main.o $(LIBS)
+$(EXE): $(OBJ) $(EXE).o
+	$(CXX) $(LDFLAGS) -o $(EXE) $(OBJ) $(EXE).o $(LIBS)
 
 doc: $(CPPSRC) doc-config
 	doxygen doc-config
 
 .PHONY: clean
 clean:
-	rm -f $(OBJ) main.o
+	rm -f $(OBJ) $(EXE).o

@@ -78,7 +78,9 @@ int main(int argc, char **argv)
 
     Molecule mol(integralsfile);
 
+    DOCIHamiltonian ham(mol);
 
+    ham.Build();
 
 
     return 0;
