@@ -11,7 +11,7 @@
  */
 Permutation::Permutation(unsigned int n)
 {
-   if(sizeof(unsigned long long)*8 >= n)
+   if(sizeof(unsigned long long)*8 < n)
       throw std::overflow_error("Cannot store permutations in unsigned long long");
 
    this->n = n;
