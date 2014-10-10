@@ -3,9 +3,9 @@
 
 #include<bitset>
 
-// it not set, set it to 32 bits
+// it not set, set it to 64 bits
 #ifndef BITSETSIZE
-#define BITSETSIZE 32
+#define BITSETSIZE 64
 #endif
 
 //! we use a std::bitset as underlying representation
@@ -31,6 +31,10 @@ class Permutation
         virtual mybitset get() const;
 
         virtual void reset();
+
+        static unsigned long long CalcCombinations(unsigned int, unsigned int);
+
+        static unsigned long long gcd(unsigned long long, unsigned long long);
 
     private:
 
