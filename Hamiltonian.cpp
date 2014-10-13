@@ -107,24 +107,8 @@ void DOCIHamiltonian::Build()
          (*fullmat)(i,j) = 0;
 
          // OEI
-         // first case: 2 different orbitals
-         if(CountBits(diff) == 2)
-         {
-            auto diff_c = diff;
-            // find the 2 orbitals
-            auto a = diff_c & (~diff_c + 1); // select rightmost one
-            diff_c ^= a; // and disable it
-            auto b = diff_c & (~diff_c + 1);
-
-            // convert to orbital number
-            a = CountBits(a-1);
-            b = CountBits(b-1);
-
-            int sign = CalcSign(a, b, bra);
-
-            (*fullmat)(i,j) += 2 * sign * molecule->getT(a, b);
-         }
-         else if(CountBits(diff) == 0)
+         // only possible with same ket and bra
+         if(CountBits(diff) == 0)
          {
             // ket == bra
             auto cur = bra;
