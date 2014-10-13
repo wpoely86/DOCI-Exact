@@ -82,6 +82,10 @@ int main(int argc, char **argv)
 
     ham.Build();
 
+    auto eigs = ham.diag();
+
+    for(unsigned int i=0;i<eigs.size();i++)
+        cout << i << "\t" << eigs[i] + mol.get_nucl_rep() << endl;
 
     return 0;
 }
