@@ -11,8 +11,8 @@
  */
 Permutation::Permutation(unsigned int n)
 {
-   if(sizeof(unsigned long long)*8 < n)
-      throw std::overflow_error("Cannot store permutations in unsigned long long");
+   if(sizeof(mybitset)*8 < n)
+      throw std::overflow_error("Cannot store permutations in assigned type");
 
    this->n = n;
 
@@ -27,19 +27,23 @@ Permutation::Permutation(unsigned int n)
  */
 mybitset Permutation::next()
 {
-   // only efficient way to do this for the moment:
-   // convert to unsigned long and convert back in the end
+#if defined(USELONG)
+#define MY_CTZ(x) __builtin_ctzl(x)
+#elif defined(USELONGLONG)
+#define MY_CTZ(x) __builtin_ctzll(x)
+#endif
  
-   auto v = current.to_ullong(); // current permutation of bits 
+   // current permutation of bits 
+   auto &v = current; // current permutation of bits 
 
    // from https://graphics.stanford.edu/~seander/bithacks.html#NextBitPermutation
    auto t = v | (v - 1); // t gets v's least significant 0 bits set to 1
    // Next set to 1 the most significant bit to change, 
    // set to 0 the least significant ones, and add the necessary 1 bits.
-   auto w = (t + 1) | (((~t & -~t) - 1) >> (__builtin_ctzll(v) + 1));
+   auto w = (t + 1) | (((~t & -~t) - 1) >> (MY_CTZ(v) + 1));
 
    // new/next permutation of bits
-   current = mybitset(w);
+   current = w;
 
    return current;
 }
@@ -59,7 +63,7 @@ mybitset Permutation::get() const
  */
 void Permutation::reset()
 {
-   current = mybitset((1L<<n)-1L);
+   current = (1L<<n)-1L;
 }
 
 /**

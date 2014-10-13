@@ -3,13 +3,17 @@
 
 #include<bitset>
 
-// it not set, set it to 64 bits
-#ifndef BITSETSIZE
-#define BITSETSIZE 64
+// use long long by default
+#if not defined(USELONG) || not defined(USELONGLONG)
+#define USELONG
 #endif
 
-//! we use a std::bitset as underlying representation
-typedef std::bitset<BITSETSIZE> mybitset;
+//! we use a unsigned long or long long as underlying representation
+#if defined(USELONG)
+typedef unsigned long mybitset;
+#elif defined(USELONGLONG)
+typedef unsigned long long mybitset;
+#endif
 
 /**
  * This class is used to generate all permutations of
