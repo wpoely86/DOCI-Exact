@@ -106,31 +106,57 @@ void DOCIHamiltonian::Build()
 
          (*fullmat)(i,j) = 0;
 
-         // OEI
-         // only possible with same ket and bra
-         if(CountBits(diff) == 0)
+         // this means 4 orbitals are different
+         if(CountBits(diff) == 2)
          {
-            // ket == bra
-            auto cur = bra;
-            
-            // find occupied orbitals
-            while(cur)
-            {
-               // select rightmost up state in the ket
-               auto ksp = cur & (~cur + 1);
-               // set it to zero
-               cur ^= ksp;
 
-               // number of the orbital
-               auto s = CountBits(ksp-1);
-
-               (*fullmat)(i,j) += 2 * molecule->getT(s, s);
-            }
          }
 
          (*fullmat)(j,i) = (*fullmat)(i,j);
 
          perm_ket.next();
+      }
+
+      // do all diagonal terms
+      auto cur = bra;
+
+      // find occupied orbitals
+      while(cur)
+      {
+         // select rightmost up state in the ket
+         auto ksp = cur & (~cur + 1);
+         // set it to zero
+         cur ^= ksp;
+
+         // number of the orbital
+         auto s = CountBits(ksp-1);
+
+         // OEI part
+         (*fullmat)(i,i) += 2 * molecule->getT(s, s);
+
+         // TEI: part a \bar a ; b \bar b (when a==b)
+         (*fullmat)(i,i) += molecule->getV(s, s, s, s);
+
+         auto cur2 = cur; 
+
+         while(cur2)
+         {
+            // select rightmost up state in the ket
+            auto ksp2 = cur2 & (~cur2 + 1);
+            // set it to zero
+            cur2 ^= ksp2;
+
+            // number of the orbital
+            auto r = CountBits(ksp2-1);
+
+            assert(r>s);
+
+            // TEI: part a b ; a b (4x)
+            (*fullmat)(i,i) += molecule->getV(s, r, s, r) - molecule->getV(s, r, r, s);
+
+            // TEI: part a \bar a ; b \bar b (when a!=b)
+            (*fullmat)(i,i) += molecule->getV(s, s, r, r);
+         }
       }
 
       perm_bra.next();

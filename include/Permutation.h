@@ -1,10 +1,8 @@
 #ifndef PERMUTATION_H
 #define PERMUTATION_H
 
-#include<bitset>
-
-// use long long by default
-#if not defined(USELONG) || not defined(USELONGLONG)
+// use unsigned long by default
+#if not defined(USELONG) && not defined(USELONGLONG)
 #define USELONG
 #endif
 
