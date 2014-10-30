@@ -44,6 +44,8 @@ class DOCIHamiltonian
 
       static int CalcSign(unsigned int i,unsigned int j, const mybitset a);
 
+      std::vector<double> getEigenVector() const;
+
    private:
 
       std::unique_ptr<Permutation> permutations;

@@ -181,7 +181,7 @@ void DOCIHamiltonian::Build()
 
 std::vector<double> DOCIHamiltonian::diag()
 {
-   char jobz = 'N';
+   char jobz = 'V';
    char uplo = 'U';
    int n = fullmat->getn();
 
@@ -199,6 +199,16 @@ std::vector<double> DOCIHamiltonian::diag()
       std::cerr << "dsyev failed. info = " << info << std::endl;
 
    return eigs;
+}
+
+std::vector<double> DOCIHamiltonian::getEigenVector() const
+{
+   std::vector<double> eigv(fullmat->getn());
+
+   for(unsigned int i=0;i<eigv.size();++i)
+      eigv[i] = (*fullmat)[i];
+
+   return eigv;
 }
 
 /**
