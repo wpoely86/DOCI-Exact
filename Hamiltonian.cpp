@@ -96,25 +96,35 @@ void DOCIHamiltonian::Build()
 
       Permutation perm_ket(*permutations);
 
-      for(unsigned int j=i;j<fullmat->getn();++j)
+      for(unsigned int j=i+1;j<fullmat->getn();++j)
       {
-         const auto ket = perm_ket.get();
+         const auto ket = perm_ket.next();
 
          const auto diff = bra ^ ket;
-
-         assert(CountBits(diff)%2 == 0);
 
          (*fullmat)(i,j) = 0;
 
          // this means 4 orbitals are different
          if(CountBits(diff) == 2)
          {
+            auto diff_c = diff;
 
+            // select rightmost up state in the ket
+            auto ksp1 = diff_c & (~diff_c + 1);
+            // set it to zero
+            diff_c ^= ksp1;
+
+            auto ksp2 = diff_c & (~diff_c + 1);
+
+            // number of the orbital
+            auto r = CountBits(ksp1-1);
+            auto s = CountBits(ksp2-1);
+
+            // TEI: a \bar a ; b \bar b
+            (*fullmat)(i,j) = molecule->getV(s, s, r, r);
          }
 
          (*fullmat)(j,i) = (*fullmat)(i,j);
-
-         perm_ket.next();
       }
 
       // do all diagonal terms
@@ -134,7 +144,7 @@ void DOCIHamiltonian::Build()
          // OEI part
          (*fullmat)(i,i) += 2 * molecule->getT(s, s);
 
-         // TEI: part a \bar a ; b \bar b (when a==b)
+         // TEI: part a \bar a ; a \bar a
          (*fullmat)(i,i) += molecule->getV(s, s, s, s);
 
          auto cur2 = cur; 
@@ -149,13 +159,17 @@ void DOCIHamiltonian::Build()
             // number of the orbital
             auto r = CountBits(ksp2-1);
 
-            assert(r>s);
+            // s < r !! (avoid double counting)
 
-            // TEI: part a b ; a b (4x)
-            (*fullmat)(i,i) += molecule->getV(s, r, s, r) - molecule->getV(s, r, r, s);
-
-            // TEI: part a \bar a ; b \bar b (when a!=b)
-            (*fullmat)(i,i) += molecule->getV(s, s, r, r);
+            // TEI:
+            // - a b ; a b
+            // - a \bar b ; a \bar b
+            // - \bar a \bar b ; \bar a \bar b
+            // with a < b
+            // The second term (ab|V|ba) is not possible in the second
+            // case, so only a prefactor of 2 instead of 4.
+            (*fullmat)(i,i) += 4 * molecule->getV(r, s, r, s);
+            (*fullmat)(i,i) -= 2 * molecule->getV(r, s, s, r);
          }
       }
 
@@ -208,7 +222,7 @@ unsigned int DOCIHamiltonian::CountBits(mybitset bits) const
  */
 int DOCIHamiltonian::CalcSign(unsigned int i,unsigned int j, const mybitset a) const
 {
-    assert(i<j);
+    assert(i<j && "Order indices correctly!");
 
     // count the number of set bits between i and j in ket a
     auto sign = CountBits(( ((1<<j) - 1) ^ ((1<<(i+1)) - 1) ) & a);
