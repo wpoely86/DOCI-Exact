@@ -414,4 +414,21 @@ void DM2::Build(Permutation &perm, std::vector<double> &eigv)
 //      std::cout << i << "\t" << diag[i] << std::endl;
 }
 
+std::ostream &operator<<(std::ostream &output,DM2 &dm2)
+{
+   auto L = dm2.get_n_sp();
+   output << "Block: " << std::endl;
+   for(int i=0;i<L;i++)
+      for(int j=i;j<L;j++)
+         output << i << "\t" << j << "\t|\t" << (*dm2.tp2sp)(i,0) << "  " <<  (*dm2.tp2sp)(i,1) << " ; " <<  (*dm2.tp2sp)(j,0) << "  " <<  (*dm2.tp2sp)(j,1) << "\t\t" << (*dm2.block)(i,j) << std::endl;
+
+   output << std::endl;
+
+   output << "Vector (4x): " << std::endl;
+   for(int i=0;i<dm2.diag.size();i++)
+      output << i << "\t|\t" << (*dm2.tp2sp)(L+i,0) << "  " << (*dm2.tp2sp)(L+i,1) << "\t\t" << dm2.diag[i] << std::endl;
+
+   return output;
+}
+
 /* vim: set ts=3 sw=3 expandtab :*/

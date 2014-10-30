@@ -1,8 +1,9 @@
 #ifndef DM2_H
 #define DM2_H
 
-#include <vector>
+#include <iostream>
 #include <memory>
+#include <vector>
 
 #include "helpers.h"
 #include "Molecule.h"
@@ -16,6 +17,8 @@
  */
 class DM2
 {
+   friend std::ostream &operator<<(std::ostream &,DM2 &);
+
    public:
       DM2(unsigned int, unsigned int);
 

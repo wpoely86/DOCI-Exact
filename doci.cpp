@@ -94,6 +94,8 @@ int main(int argc, char **argv)
 
     rdm.Build(perm, eigv);
 
+    cout << rdm << endl;
+
     return 0;
 }
 
