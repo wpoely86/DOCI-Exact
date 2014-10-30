@@ -5,6 +5,7 @@ CPPSRC= helpers.cpp\
 	Molecule.cpp\
 	Hamiltonian.cpp\
 	SparseMatrix_CCS.cpp\
+	DM2.cpp\
 
 CUDASRC=
 
