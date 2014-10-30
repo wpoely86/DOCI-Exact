@@ -94,7 +94,7 @@ void DOCIHamiltonian::Build()
    {
       const auto bra = perm_bra.get();
 
-      Permutation perm_ket(*permutations);
+      Permutation perm_ket(perm_bra);
 
       for(unsigned int j=i+1;j<fullmat->getn();++j)
       {
@@ -126,6 +126,8 @@ void DOCIHamiltonian::Build()
 
          (*fullmat)(j,i) = (*fullmat)(i,j);
       }
+
+      (*fullmat)(i,i) = 0;
 
       // do all diagonal terms
       auto cur = bra;
