@@ -14,6 +14,7 @@ std::unique_ptr<helpers::matrix> DM2::tp2sp = nullptr;
  * Create second order density matrix for n_sp single particle levels
  * (with spin degeneracy), meaning: n_sp doci levels.
  * @param n_sp the number of doci levels
+ * @param n the number of particles
  */
 DM2::DM2(unsigned int n_sp, unsigned int n)
 {
@@ -165,6 +166,10 @@ void DM2::fill_lists(unsigned int n_sp)
       }
 }
 
+/**
+ * Write the current DM2 to a HDF5 file
+ * @param filename the name of the file
+ */
 void DM2::WriteToFile(std::string filename) const
 {
    hid_t       file_id, group_id, dataset_id, attribute_id, dataspace_id;
@@ -234,6 +239,11 @@ void DM2::WriteToFile(std::string filename) const
    HDF5_STATUS_CHECK(status);
 }
 
+/**
+ * Read a DM2 in from a HDF5 file.
+ * @param filename the file to use
+ * @return a new DM2 object with the data from the HDF5 file
+ */
 DM2 DM2::ReadFromFile(std::string filename)
 {
    hid_t       file_id, dataset_id, group_id, attribute_id;
@@ -406,12 +416,6 @@ void DM2::Build(Permutation &perm, std::vector<double> &eigv)
       tmp += 4 * elem;
    std::cout << "Trace: " << tmp << std::endl;
    std::cout << "Trace 2: " << block->trace() << std::endl;
-
-//   block->Print();
-//
-//   std::cout << std::endl;
-//   for(unsigned int i=0;i<diag.size();i++)
-//      std::cout << i << "\t" << diag[i] << std::endl;
 }
 
 std::ostream &operator<<(std::ostream &output,DM2 &dm2)

@@ -36,8 +36,6 @@ class DM2
 
       double operator()(int, int, int, int) const;
 
-      void fill_lists(unsigned int);
-
       void WriteToFile(const std::string) const;
 
       static DM2 ReadFromFile(const std::string);
@@ -49,6 +47,8 @@ class DM2
       void Build(Permutation &, std::vector<double> &);
 
    private:
+
+      void fill_lists(unsigned int);
 
       //! convert single particles indices to two particles indices
       static std::unique_ptr<helpers::matrix> sp2tp;
