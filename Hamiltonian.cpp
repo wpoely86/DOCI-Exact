@@ -204,7 +204,7 @@ std::vector<double> DOCIHamiltonian::diag()
  * @param bits the unsigned long long to count the bits from
  * @return the number of ones in bits
  */
-unsigned int DOCIHamiltonian::CountBits(mybitset bits) const
+unsigned int DOCIHamiltonian::CountBits(mybitset bits)
 {
 #if defined(USELONG)
    return __builtin_popcountl(bits);
@@ -220,7 +220,7 @@ unsigned int DOCIHamiltonian::CountBits(mybitset bits) const
  * @param a the set of bits to calcalute on
  * @return the number of bits set between i and j in a
  */
-int DOCIHamiltonian::CalcSign(unsigned int i,unsigned int j, const mybitset a) const
+int DOCIHamiltonian::CalcSign(unsigned int i,unsigned int j, const mybitset a)
 {
     assert(i<j && "Order indices correctly!");
 

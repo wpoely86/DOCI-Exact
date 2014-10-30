@@ -40,11 +40,11 @@ class DOCIHamiltonian
 
       std::vector<double> diag();
 
+      static unsigned int CountBits(mybitset);
+
+      static int CalcSign(unsigned int i,unsigned int j, const mybitset a);
+
    private:
-
-      unsigned int CountBits(mybitset) const;
-
-      int CalcSign(unsigned int i,unsigned int j, const mybitset a) const;
 
       std::unique_ptr<Permutation> permutations;
 
