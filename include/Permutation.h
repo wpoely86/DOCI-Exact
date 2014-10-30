@@ -38,6 +38,8 @@ class Permutation
 
         static unsigned long long gcd(unsigned long long, unsigned long long);
 
+        static unsigned int getMax();
+
     private:
 
         //! the current bitset

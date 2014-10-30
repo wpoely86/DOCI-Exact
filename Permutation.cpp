@@ -123,4 +123,13 @@ unsigned long long Permutation::gcd(unsigned long long x, unsigned long long y)
     return x;
 }
 
+/**
+ * @return Return the maximum number of sp states that can be represented
+ * by the current type
+ */
+unsigned int Permutation::getMax()
+{
+   return sizeof(mybitset)*8;
+}
+
 /* vim: set ts=3 sw=3 expandtab :*/
