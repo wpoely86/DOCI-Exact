@@ -285,7 +285,7 @@ DM2 DM2::ReadFromFile(std::string filename)
    status = H5Dclose(dataset_id);
    HDF5_STATUS_CHECK(status);
 
-   status = H5Fclose(group_id);
+   status = H5Gclose(group_id);
    HDF5_STATUS_CHECK(status);
 
    status = H5Fclose(file_id);
