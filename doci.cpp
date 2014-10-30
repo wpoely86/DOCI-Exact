@@ -25,6 +25,7 @@ along with Hubbard-GPU.  If not, see <http://www.gnu.org/licenses/>.
 #include "Permutation.h"
 #include "Molecule.h"
 #include "Hamiltonian.h"
+#include "DM2.h"
 
 /**
  * @mainpage
@@ -86,6 +87,12 @@ int main(int argc, char **argv)
 
     for(unsigned int i=0;i<eigs.size();i++)
         cout << i << "\t" << eigs[i] + mol.get_nucl_rep() << endl;
+
+    DM2 rdm(mol);
+    auto perm = ham.getPermutation();
+    auto eigv = ham.getEigenVector();
+
+    rdm.Build(perm, eigv);
 
     return 0;
 }
