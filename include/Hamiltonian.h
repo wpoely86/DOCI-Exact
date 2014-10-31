@@ -6,7 +6,7 @@
 
 #include "Permutation.h"
 #include "Molecule.h"
-#include "SparseMatrix_CCS.h"
+#include "SparseMatrix_CRS.h"
 
 /**
  * DOCIHamiltonian will store the actual hamiltonian in a sparse format
@@ -38,13 +38,13 @@ class DOCIHamiltonian
 
       void Build();
 
-      std::vector<double> diag();
+      std::pair< std::vector<double>,helpers::matrix > DiagonalizeFull() const;
+
+      std::pair< double,std::vector<double> > Diagonalize() const;
 
       static unsigned int CountBits(mybitset);
 
       static int CalcSign(unsigned int i,unsigned int j, const mybitset a);
-
-      std::vector<double> getEigenVector() const;
 
    private:
 
@@ -52,9 +52,7 @@ class DOCIHamiltonian
 
       std::unique_ptr<Molecule> molecule;
 
-      std::unique_ptr<SparseMatrix_CCS> mat;
-
-      std::unique_ptr<helpers::matrix> fullmat;
+      std::unique_ptr<SparseMatrix_CRS> mat;
 };
 
 #endif /* HAMILTONIAN_H */
