@@ -4,7 +4,7 @@ CPPSRC= helpers.cpp\
 	Permutation.cpp\
 	Molecule.cpp\
 	Hamiltonian.cpp\
-	SparseMatrix_CCS.cpp\
+	SparseMatrix_CRS.cpp\
 	DM2.cpp\
 
 CUDASRC=
