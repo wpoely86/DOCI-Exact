@@ -198,11 +198,21 @@ std::unique_ptr<double []> matrix::svd()
     return sing_vals;
 }
 
+void matrix::mvprod(const double *x, double *y, double beta) const
+{
+    assert(n==m);
+    double alpha = 1;
+    int incx = 1;
+    char uplo = 'U';
+
+    dsymv_(&uplo,&n,&alpha,mat.get(),&n,x,&incx,&beta,y,&incx);
+}
+
 void matrix::Print() const
 {
     for(int i=0;i<n;i++)
         for(int j=0;j<m;j++)
-            std::cout << i << " " << j << "\t" << (*this)(i,j) << std::endl;
+            std::cout << i << "\t" << j << "\t" << (*this)(i,j) << std::endl;
 }
 
 double matrix::trace() const
@@ -213,6 +223,35 @@ double matrix::trace() const
         result += (*this)(i,i);
 
     return result;
+}
+
+/**
+ * Get a column out of a matrix.
+ * @param idx the number of the column
+ * @return a vector with the contents of the column
+ */
+std::vector<double> matrix::GetColumn(unsigned int idx) const
+{
+    assert(idx < m);
+    std::vector<double> col(n);
+
+    std::memcpy(col.data(), &mat[idx*n], sizeof(double)*n);
+
+    return col;
+}
+
+/**
+ * Dangerious brother of GetColumn(), it returns a raw
+ * pointer to a column. If this object goes out of scope,
+ * this pointer will no longer be valid
+ * @param idx the number of the column
+ * @return pointer to the column requested
+ */
+const double* matrix::GetColumnRaw(unsigned int idx) const
+{
+    assert(idx < m);
+
+    return &mat[idx*n];
 }
 
 

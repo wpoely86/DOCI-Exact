@@ -67,9 +67,15 @@ class matrix
 
         std::unique_ptr<double []> svd();
 
+        void mvprod(const double *x, double *y, double beta) const;
+
         void Print() const;
 
         double trace() const;
+
+        std::vector<double> GetColumn(unsigned int) const;
+
+        const double* GetColumnRaw(unsigned int idx) const;
 
         void SaveToFile(std::string filename) const;
 
