@@ -3,6 +3,7 @@
 #include <hdf5.h>
 
 #include "Molecule.h"
+#include "Permutation.h"
 
 // this helps to check the return codes of HDF5 calls
 #define HDF5_STATUS_CHECK(status) if(status < 0) std::cerr << __FILE__ << ":" << __LINE__ << ": Problem with writing to file. Status code=" << status << std::endl;
@@ -47,6 +48,8 @@ Molecule::Molecule(std::string filename)
    status = H5Aclose(attribute_id);
    HDF5_STATUS_CHECK(status);
 
+   if(n_sp > Permutation::getMax() )
+      throw std::overflow_error("The used type is not big enough to store all single particle states!");
 
    attribute_id = H5Aopen(group_id, "nuclear_repulsion_energy", H5P_DEFAULT);
    HDF5_STATUS_CHECK(attribute_id);
@@ -191,6 +194,22 @@ unsigned int Molecule::get_n_sp() const
 unsigned int Molecule::get_n_electrons() const
 {
    return n_electrons;
+}
+
+void Molecule::Print() const
+{
+   auto L = get_n_sp();
+
+   printf("%20.15f\t%d\t%d\t0\t0\n", 0.0, 0, 0);
+   for(int a=0;a<L;a++)
+      for(int b=0;b<L;b++)
+         printf("%20.15f\t%d\t%d\t0\t0\n", (*OEI)(a,b), a+1,b+1);
+
+   for(int a=0;a<L;a++)
+      for(int b=0;b<L;b++)
+         for(int c=0;c<L;c++)
+            for(int d=0;d<L;d++)
+               printf("%20.15f\t%d\t%d\t%d\t%d\n", (*TEI)(a*L+b,c*L+d), a+1,c+1,b+1,d+1);
 }
 
 /* vim: set ts=3 sw=3 expandtab :*/

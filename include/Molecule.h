@@ -38,6 +38,8 @@ class Molecule
 
       unsigned int get_n_electrons() const;
 
+      void Print() const;
+
    private:
       //! store the one electron matrix elements
       std::unique_ptr<helpers::matrix> OEI;
