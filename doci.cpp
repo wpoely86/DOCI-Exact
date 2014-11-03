@@ -48,17 +48,19 @@ int main(int argc, char **argv)
     cout.precision(10);
 
     std::string integralsfile = "mo-integrals.h5";
+    std::string h5name = "rdm.h5";
 
     struct option long_options[] =
     {
         {"integrals",  required_argument, 0, 'i'},
+        {"output",  required_argument, 0, 'o'},
         {"help",  no_argument, 0, 'h'},
         {0, 0, 0, 0}
     };
 
     int i,j;
 
-    while( (j = getopt_long (argc, argv, "hi:", long_options, &i)) != -1)
+    while( (j = getopt_long (argc, argv, "hi:o:", long_options, &i)) != -1)
         switch(j)
         {
             case 'h':
@@ -66,12 +68,16 @@ int main(int argc, char **argv)
                 cout << "Usage: " << argv[0] << " [OPTIONS]\n"
                     "\n"
                     "    -i, --integrals=integrals-file  Set the input integrals file\n"
+                    "    -o, --output=h5-file            Set the output filename for the RDM\n"
                     "    -h, --help                      Display this help\n"
                     "\n";
                 return 0;
                 break;
             case 'i':
                 integralsfile = optarg;
+                break;
+            case 'o':
+                h5name = optarg;
                 break;
         }
 
@@ -83,18 +89,27 @@ int main(int argc, char **argv)
 
     ham.Build();
 
-    auto eigs = ham.diag();
+//    auto eig = ham.DiagonalizeFull();
+//
+//    for(unsigned int i=0;i<eig.first.size();i++)
+//        cout << i << "\t" << eig.first[i] + mol.get_nucl_rep() << endl;
 
-    for(unsigned int i=0;i<eigs.size();i++)
-        cout << i << "\t" << eigs[i] + mol.get_nucl_rep() << endl;
+    auto eig2 = ham.Diagonalize();
+
+    cout << "E = " << eig2.first + mol.get_nucl_rep() << endl;
 
     DM2 rdm(mol);
     auto perm = ham.getPermutation();
-    auto eigv = ham.getEigenVector();
+    rdm.Build(perm, eig2.second);
 
-    rdm.Build(perm, eigv);
+    DM2 rdm_ham(mol);
 
-    cout << rdm << endl;
+    rdm_ham.BuildHamiltonian(mol);
+
+    cout << "DM2 Energy = " << rdm.Dot(rdm_ham) + mol.get_nucl_rep() << endl;
+    cout << "DM2 Trace = " << rdm.Trace() << endl;
+
+    rdm.WriteToFile(h5name);
 
     return 0;
 }
