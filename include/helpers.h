@@ -25,6 +25,10 @@
 #include <cstring>
 #include <assert.h>
 
+/**
+ * We use the namespace helpers to store or 'helping' classes
+ * Can be reused elsewhere with trouble
+ */
 namespace helpers {
 
 /**

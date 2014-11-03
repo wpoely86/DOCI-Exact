@@ -5,8 +5,10 @@
 #include "Hamiltonian.h"
 #include "lapack.h"
 
-std::unique_ptr<helpers::matrix> DM2::sp2tp = nullptr;
-std::unique_ptr<helpers::matrix> DM2::tp2sp = nullptr;
+using namespace doci;
+
+std::unique_ptr<helpers::matrix> doci::DM2::sp2tp = nullptr;
+std::unique_ptr<helpers::matrix> doci::DM2::tp2sp = nullptr;
 
 // this helps to check the return codes of HDF5 calls
 #define HDF5_STATUS_CHECK(status) if(status < 0) std::cerr << __FILE__ << ":" << __LINE__ << ": Problem with writing to file. Status code=" << status << std::endl;
@@ -413,7 +415,7 @@ void DM2::Build(Permutation &perm, std::vector<double> &eigv)
    }
 }
 
-std::ostream &operator<<(std::ostream &output,DM2 &dm2)
+std::ostream &operator<<(std::ostream &output,doci::DM2 &dm2)
 {
    auto L = dm2.get_n_sp();
    output << "Block: " << std::endl;

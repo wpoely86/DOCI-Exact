@@ -27,6 +27,8 @@ along with Hubbard-GPU.  If not, see <http://www.gnu.org/licenses/>.
 #include "Hamiltonian.h"
 #include "DM2.h"
 
+using namespace doci;
+
 /**
  * @mainpage
  * This is an exact DOCI solver by means of a lanczos solver. We build the

@@ -5,6 +5,8 @@
 #include "Molecule.h"
 #include "Permutation.h"
 
+using namespace doci;
+
 // this helps to check the return codes of HDF5 calls
 #define HDF5_STATUS_CHECK(status) if(status < 0) std::cerr << __FILE__ << ":" << __LINE__ << ": Problem with writing to file. Status code=" << status << std::endl;
 

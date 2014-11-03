@@ -5,6 +5,8 @@
 // this helps to check the return codes of HDF5 calls
 #define HDF5_STATUS_CHECK(status) if(status < 0) std::cerr << __FILE__ << ":" << __LINE__ << ": Problem with writing to file. Status code=" << status << std::endl;
 
+using namespace helpers;
+
 /**
  * Construct SparseMatrix_CRS object for n x n matrix
  * @param n the number of rows/columns
@@ -110,7 +112,7 @@ void SparseMatrix_CRS::PrintRaw() const
  * @param matrix_p the matrix to print
  * @return the filled ostream (with the matrix)
  */
-ostream &operator<<(ostream &output,SparseMatrix_CRS &matrix_p)
+std::ostream &operator<<(std::ostream &output,helpers::SparseMatrix_CRS &matrix_p)
 {
    for(unsigned int i=0;i<matrix_p.row.size()-1;i++)
       for(unsigned int k=matrix_p.row[i];k<matrix_p.row[i+1];k++)

@@ -6,6 +6,8 @@
 
 #include "helpers.h"
 
+namespace doci {
+
 /**
  * We will store the matrix elements of our
  * molecule in this class. It needs nice
@@ -56,6 +58,8 @@ class Molecule
       //! the size of the single particles space (without spin)
       unsigned int n_sp;
 };
+
+}
 
 #endif /* MOLECULE_H */
 

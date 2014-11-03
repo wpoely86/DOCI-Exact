@@ -6,12 +6,22 @@
 #define USELONG
 #endif
 
-//! we use a unsigned long or long long as underlying representation
 #if defined(USELONG)
+//! we use a unsigned long as underlying representation
 typedef unsigned long mybitset;
 #elif defined(USELONGLONG)
+//! we use a unsigned long long as underlying representation
 typedef unsigned long long mybitset;
 #endif
+
+
+
+/**
+ * We use the namespace doci to put all other stuff in.
+ * In this way, the code can be easily used from other code without
+ * name slashes or anything
+ */
+namespace doci {
 
 /**
  * This class is used to generate all permutations of
@@ -48,6 +58,8 @@ class Permutation
         //! number of ones needed
         unsigned int n;
 };
+
+}
 
 #endif /* PERMUTATION_H */
 

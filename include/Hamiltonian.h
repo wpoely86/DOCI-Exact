@@ -8,6 +8,8 @@
 #include "Molecule.h"
 #include "SparseMatrix_CRS.h"
 
+namespace doci {
+
 /**
  * DOCIHamiltonian will store the actual hamiltonian in a sparse format
  * It needs a Permutation object for the basisset and a Molecule object
@@ -52,8 +54,10 @@ class DOCIHamiltonian
 
       std::unique_ptr<Molecule> molecule;
 
-      std::unique_ptr<SparseMatrix_CRS> mat;
+      std::unique_ptr<helpers::SparseMatrix_CRS> mat;
 };
+
+}
 
 #endif /* HAMILTONIAN_H */
 

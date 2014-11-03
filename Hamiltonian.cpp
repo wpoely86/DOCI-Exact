@@ -4,6 +4,7 @@
 #include "lapack.h"
 #include "Hamiltonian.h"
 
+using namespace doci;
 
 /**
  * Constructor
@@ -19,7 +20,7 @@ DOCIHamiltonian::DOCIHamiltonian(const Permutation &perm, const Molecule &mol)
       throw("We need even number of electrons!");
 
    auto dim = Permutation::CalcCombinations(molecule->get_n_sp(), molecule->get_n_electrons()/2);
-   mat.reset(new SparseMatrix_CRS(dim));
+   mat.reset(new helpers::SparseMatrix_CRS(dim));
 }
 
 /**
@@ -38,21 +39,21 @@ DOCIHamiltonian::DOCIHamiltonian(const Molecule &mol)
    permutations.reset(new Permutation(molecule->get_n_electrons()/2));
 
    auto dim = Permutation::CalcCombinations(molecule->get_n_sp(), molecule->get_n_electrons()/2);
-   mat.reset(new SparseMatrix_CRS(dim));
+   mat.reset(new helpers::SparseMatrix_CRS(dim));
 }
 
 DOCIHamiltonian::DOCIHamiltonian(const DOCIHamiltonian &orig)
 {
    permutations.reset(new Permutation(*orig.permutations));
    molecule.reset(new Molecule(*orig.molecule));
-   mat.reset(new SparseMatrix_CRS(*orig.mat));
+   mat.reset(new helpers::SparseMatrix_CRS(*orig.mat));
 }
 
 DOCIHamiltonian& DOCIHamiltonian::operator=(const DOCIHamiltonian &orig)
 {
    permutations.reset(new Permutation(*orig.permutations));
    molecule.reset(new Molecule(*orig.molecule));
-   mat.reset(new SparseMatrix_CRS(*orig.mat));
+   mat.reset(new helpers::SparseMatrix_CRS(*orig.mat));
 
    return *this;
 }

@@ -5,6 +5,8 @@
 
 #include "Permutation.h"
 
+using namespace doci;
+
 /**
  * Constructor
  * @param n the number of bit that needs to be set

@@ -9,6 +9,12 @@
 #include "Molecule.h"
 #include "Permutation.h"
 
+// dark magic to get the friend operator<< to work...
+namespace doci { class DM2; }
+std::ostream &operator<<(std::ostream &,doci::DM2 &);
+
+namespace doci {
+
 /**
  * This will store an second order density matrix from a
  * DOCI wavefunction. It only stores the non-zero elements,
@@ -17,7 +23,7 @@
  */
 class DM2
 {
-   friend std::ostream &operator<<(std::ostream &,DM2 &);
+   friend std::ostream &::operator<<(std::ostream &,doci::DM2 &);
 
    public:
       DM2(unsigned int, unsigned int);
@@ -71,6 +77,8 @@ class DM2
       //! number of particles
       unsigned int N;
 };
+
+}
 
 #endif /* DM2_H */
 

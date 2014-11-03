@@ -6,7 +6,11 @@
 
 #include "helpers.h"
 
-using std::ostream;
+// dark magic to get the friend operator<< to work...
+namespace helpers { class SparseMatrix_CRS; };
+std::ostream &operator<<(std::ostream &output,helpers::SparseMatrix_CRS &matrix_p);
+
+namespace helpers {
 
 /**
  * @author Ward Poelmans
@@ -26,7 +30,7 @@ class SparseMatrix_CRS
     * @param output The stream to which you are writing (e.g. cout)
     * @param matrix_p de SparseMatrix_CRS you want to print
     */
-   friend ostream &operator<<(ostream &output,SparseMatrix_CRS &matrix_p);
+   friend std::ostream &::operator<<(std::ostream &output,helpers::SparseMatrix_CRS &matrix_p);
 
    public:
 
@@ -75,6 +79,8 @@ class SparseMatrix_CRS
       //!dimension of the matrix (number of rows/columns)
       unsigned int n;
 };
+
+}
 
 #endif /* SPARSEMATRIX_CRS_H */
 
