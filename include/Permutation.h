@@ -6,6 +6,10 @@
 #define USELONG
 #endif
 
+#if defined(USELONG) && defined(USELONGLONG)
+#error "You really have to choose between unsigned long and unsigned long long!"
+#endif
+
 #if defined(USELONG)
 //! we use a unsigned long as underlying representation
 typedef unsigned long mybitset;
