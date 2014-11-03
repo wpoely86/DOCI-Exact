@@ -241,7 +241,7 @@ std::pair< double,std::vector<double> > DOCIHamiltonian::Diagonalize() const
 
    // rvec == 0 : calculate only eigenvalue
    // rvec > 0 : calculate eigenvalue and eigenvector
-   int rvec = 0;
+   int rvec = 1;
 
    // how many eigenvectors to calculate: 'A' => nev eigenvectors
    char howmny = 'A';
@@ -300,8 +300,8 @@ std::pair< std::vector<double>,helpers::matrix > DOCIHamiltonian::DiagonalizeFul
    char uplo = 'U';
    int n = mat->gn();
 
-   helpers::matrix fullmat(n, n);
-   mat->ConvertToMatrix(fullmat);
+   std::unique_ptr<helpers::matrix> fullmat(new helpers::matrix(n, n));
+   mat->ConvertToMatrix(*fullmat);
 
    std::vector<double> eigs(n);
 
@@ -311,12 +311,12 @@ std::pair< std::vector<double>,helpers::matrix > DOCIHamiltonian::DiagonalizeFul
 
    int info = 0;
 
-   dsyev_(&jobz,&uplo,&n,fullmat.getpointer(),&n,eigs.data(),work.get(),&lwork,&info);
+   dsyev_(&jobz,&uplo,&n,fullmat->getpointer(),&n,eigs.data(),work.get(),&lwork,&info);
 
    if(info)
       std::cerr << "dsyev failed. info = " << info << std::endl;
 
-   return std::make_pair(std::move(eigs), std::move(fullmat));
+   return std::make_pair(std::move(eigs), std::move(*fullmat));
 }
 
 /**
