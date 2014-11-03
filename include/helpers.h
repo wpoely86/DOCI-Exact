@@ -24,7 +24,6 @@
 #include <vector>
 #include <cstring>
 #include <assert.h>
-#include "SparseMatrix_CCS.h"
 
 namespace helpers {
 
