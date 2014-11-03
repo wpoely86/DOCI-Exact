@@ -181,6 +181,11 @@ void DOCIHamiltonian::Build()
 }
 
 
+/**
+ * Calcalate the lowest eigenvalue and eigenvector using lanczos method.
+ * We use arpack for this.
+ * @return a pair of the lowest eigenvalue and corresponding normalized eigenvector
+ */
 std::pair< double,std::vector<double> > DOCIHamiltonian::Diagonalize() const
 {
    // dimension of the matrix

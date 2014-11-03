@@ -205,8 +205,9 @@ void SparseMatrix_CRS::NewRow()
 
 /**
  * Do the matrix vector product y = A * x + beta * y
- * @param xmat a m component vector
- * @param ymat a n component vector
+ * @param x a m component vector
+ * @param y a n component vector
+ * @param beta the multiply factor for y
  */
 void SparseMatrix_CRS::mvprod(const double *x, double *y, double beta) const
 {
@@ -326,6 +327,11 @@ int SparseMatrix_CRS::WriteToFile(const char *filename, const char *name, bool a
    return 0;
 }
 
+/**
+ * Read a SparseMatrix_CRS from a HDF5 file
+ * @param filename the name of the file to read from
+ * @param name the name of the group in the HDF5 file
+ */
 int SparseMatrix_CRS::ReadFromFile(const char *filename, const char *name)
 {
    hid_t       file_id, group_id, dataset_id, attribute_id;
@@ -411,16 +417,33 @@ int SparseMatrix_CRS::ReadFromFile(const char *filename, const char *name)
    return 0;
 }
 
+/**
+ * Get the number of elements in a row
+ * @param idx the row to consider
+ * @return the number of non-zero elements in row idx
+ */
 unsigned int SparseMatrix_CRS::NumOfElInRow(unsigned int idx) const
 {
    return (row[idx+1]-row[idx]);
 }
 
+/**
+ * Get a element out of a row
+ * @param row_index the number of the row where to get an element of
+ * @param element_index the index of the element (index of the non-zero elements, not the column index)
+ * @return the value of the element
+ */
 double SparseMatrix_CRS::GetElementInRow(unsigned int row_index, unsigned int element_index) const
 {
    return data[row[row_index]+element_index];
 }
 
+/**
+ * Get the column number of a element in a row. Used together with GetElementInRow()
+ * @param row_index the index of the row
+ * @param element_index the index of the element in the row (index of the non-zero elements, not the column index)
+ * @return the column number of the element
+ */
 unsigned int SparseMatrix_CRS::GetElementColIndexInRow(unsigned int row_index, unsigned int element_index) const
 {
    return col[row[row_index]+element_index];

@@ -196,6 +196,10 @@ unsigned int Molecule::get_n_electrons() const
    return n_electrons;
 }
 
+/**
+ * Print the molecular integrals. Usefull for input into
+ * other codes
+ */
 void Molecule::Print() const
 {
    auto L = get_n_sp();
