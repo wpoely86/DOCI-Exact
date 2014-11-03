@@ -46,6 +46,12 @@ class DM2
 
       void Build(Permutation &, std::vector<double> &);
 
+      void BuildHamiltonian(const Molecule &);
+
+      double Dot(const DM2 &) const;
+
+      double Trace() const;
+
    private:
 
       void fill_lists(unsigned int);
@@ -63,7 +69,7 @@ class DM2
       std::vector<double> diag;
 
       //! number of particles
-      unsigned int n;
+      unsigned int N;
 };
 
 #endif /* DM2_H */

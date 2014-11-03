@@ -3,6 +3,7 @@
 
 #include "DM2.h"
 #include "Hamiltonian.h"
+#include "lapack.h"
 
 std::unique_ptr<helpers::matrix> DM2::sp2tp = nullptr;
 std::unique_ptr<helpers::matrix> DM2::tp2sp = nullptr;
@@ -24,7 +25,7 @@ DM2::DM2(unsigned int n_sp, unsigned int n)
    block.reset(new helpers::matrix(n_sp, n_sp));
    diag.resize((n_sp*(n_sp-1))/2);
 
-   this->n =  n;
+   this->N =  n;
 }
 
 
@@ -42,7 +43,7 @@ DM2::DM2(const Molecule &mol)
 
    block.reset(new helpers::matrix(n_sp, n_sp));
    diag.resize((n_sp*(n_sp-1))/2);
-   n = mol.get_n_electrons();
+   N = mol.get_n_electrons();
 }
 
 DM2::DM2(const DM2 &orig)
@@ -51,21 +52,21 @@ DM2::DM2(const DM2 &orig)
 
    block.reset(new helpers::matrix(*orig.block));
    diag = orig.diag;
-   n = orig.n;
+   N = orig.N;
 }
 
 DM2::DM2(DM2 &&orig)
 {
    block = std::move(orig.block);
    diag = std::move(orig.diag);
-   n = orig.n;
+   N = orig.N;
 }
 
 DM2& DM2::operator=(const DM2 &orig)
 {
    block.reset(new helpers::matrix(*orig.block));
    diag = orig.diag;
-   n = orig.n;
+   N = orig.N;
 
    return *this;
 }
@@ -74,7 +75,7 @@ DM2& DM2::operator=(DM2 &&orig)
 {
    block = std::move(orig.block);
    diag = std::move(orig.diag);
-   n = orig.n;
+   N = orig.N;
 
    return *this;
 }
@@ -223,7 +224,7 @@ void DM2::WriteToFile(std::string filename) const
    HDF5_STATUS_CHECK(status);
 
    attribute_id = H5Acreate (group_id, "N", H5T_STD_U32LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT);
-   status = H5Awrite (attribute_id, H5T_NATIVE_UINT, &n );
+   status = H5Awrite (attribute_id, H5T_NATIVE_UINT, &N );
    HDF5_STATUS_CHECK(status);
 
    status = H5Aclose(attribute_id);
@@ -268,14 +269,14 @@ DM2 DM2::ReadFromFile(std::string filename)
    attribute_id = H5Aopen(group_id, "N", H5P_DEFAULT);
    HDF5_STATUS_CHECK(attribute_id);
 
-   unsigned int n;
-   status = H5Aread(attribute_id, H5T_NATIVE_UINT, &n);
+   unsigned int N;
+   status = H5Aread(attribute_id, H5T_NATIVE_UINT, &N);
    HDF5_STATUS_CHECK(status);
 
    status = H5Aclose(attribute_id);
    HDF5_STATUS_CHECK(status);
 
-   DM2 dm2(L,n);
+   DM2 dm2(L,N);
 
    dataset_id = H5Dopen(file_id, "/RDM/Block", H5P_DEFAULT);
    HDF5_STATUS_CHECK(dataset_id);
@@ -309,7 +310,7 @@ DM2 DM2::ReadFromFile(std::string filename)
  */
 unsigned int DM2::get_n_electrons() const
 {
-   return n;
+   return N;
 }
 
 /**
@@ -410,12 +411,6 @@ void DM2::Build(Permutation &perm, std::vector<double> &eigv)
 
       perm_bra.next();
    }
-
-   auto tmp = block->trace();
-   for(auto elem : diag)
-      tmp += 4 * elem;
-   std::cout << "Trace: " << tmp << std::endl;
-   std::cout << "Trace 2: " << block->trace() << std::endl;
 }
 
 std::ostream &operator<<(std::ostream &output,DM2 &dm2)
@@ -433,6 +428,93 @@ std::ostream &operator<<(std::ostream &output,DM2 &dm2)
       output << i << "\t|\t" << (*dm2.tp2sp)(L+i,0) << "  " << (*dm2.tp2sp)(L+i,1) << "\t\t" << dm2.diag[i] << std::endl;
 
    return output;
+}
+
+/**
+ * Build the reducted hamiltonian for Molecule mol
+ * @param mol the molecule to use
+ */
+void DM2::BuildHamiltonian(const Molecule &mol)
+{
+   auto L = block->getn();
+
+   // make our life easier
+   auto calc_elem = [this,&mol,L] (int i, int j) {
+      int a = (*tp2sp)(i,0);
+      int b = (*tp2sp)(i,1);
+      int c = (*tp2sp)(j,0);
+      int d = (*tp2sp)(j,1);
+
+      int a_ = a % L;
+      int b_ = b % L;
+      int c_ = c % L;
+      int d_ = d % L;
+
+      double result = 0;
+
+      // sp terms
+      if(i==j)
+         result += (mol.getT(a_,a_) + mol.getT(b_,b_))/(N - 1.0);
+
+      // tp terms:
+
+      // a \bar a ; b \bar b
+      if(b==(a+L) && d==(c+L))
+         result += mol.getV(a_,b_,c_,d_);
+
+      // a b ; a b
+      // \bar a \bar b ; \bar a \bar b
+      if(i==j && a/L == b/L && a!=b)
+         result += mol.getV(a_,b_,c_,d_) - mol.getV(a_,b_,d_,c_);
+
+      // a \bar b ; a \bar b
+      // \bar a b ; \bar a b
+      if(i==j && a/L != b/L && a%L!=b%L)
+         result += mol.getV(a_,b_, c_,d_);
+
+      return result;
+   };
+
+   for(int i=0;i<block->getn();++i)
+      for(int j=i;j<block->getn();++j)
+         (*block)(i,j) = (*block)(j,i) = calc_elem(i,j);
+
+   for(int i=0;i<diag.size();i++)
+      // keep in mind that the degen of the vector is 4. We need prefactor of 2, so
+      // we end up with 0.5
+      diag[i] = 0.5*calc_elem(L+i,L+i) + 0.5*calc_elem(L*L+i,L*L+i);
+}
+
+/**
+ * Calculate the dot product with this DM2 and other one.
+ * @param x the other DM2
+ * @return the dot product between this and x
+ */
+double DM2::Dot(const DM2 &x) const
+{
+   double result = 0;
+
+   int n = block->getn()*block->getn();
+   int inc = 1;
+
+   result += ddot_(&n,block->getpointer(),&inc,x.block->getpointer(),&inc);
+
+   n = diag.size();
+   result += 4 * ddot_(&n,diag.data(),&inc,x.diag.data(),&inc);
+
+   return result;
+}
+
+/**
+ * @return the trace of the this DM2 object
+ */
+double DM2::Trace() const
+{
+   double result = 0;
+   for(auto elem : diag)
+      result += elem;
+
+   return block->trace() + 4 * result;
 }
 
 /* vim: set ts=3 sw=3 expandtab :*/

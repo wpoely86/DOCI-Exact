@@ -14,7 +14,7 @@ extern "C" {
    void dgemm_(char *transA,char *transB,const int *m,const int *n,const int *k,double *alpha,double *A,const int *lda,double *B,const int *ldb,double *beta,double *C,const int *ldc);
    void dsymm_(char *side,char *uplo,int *m,int *n,double *alpha,double *A,int *lda,double *B,int *ldb,double *beta,double *C,int *ldc);
    void dgemv_(char *trans,int *m,int *n,double *alpha,double *A,int *lda,double *x,int *incx,double *beta,double *y,int *incy);
-   double ddot_(const int *n,double *x,int *incx,double *y,int *incy);
+   double ddot_(const int *n,const double *x,int *incx, const double *y,int *incy);
    void dsyev_(char *jobz,char *uplo,int *n,double *A,int *lda,double *W,double *work,int *lwork,int *info);
    void dpotrf_(char *uplo,int *n,double *A,int *lda,int *INFO);
    void dpotri_(char *uplo,int *n,double *A,int *lda,int *INFO);
