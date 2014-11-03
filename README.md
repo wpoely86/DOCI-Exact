@@ -14,3 +14,7 @@ To build this, you need a C++11 compiler (gcc 4.8 or newer, clang 3.3 or newer),
 the HDF5 libraries, the blas and lapack libraries and the arpack library. The
 Makefile is quite simple, adjust the compilers and header/libraries as needed
 for your system.
+
+Documentation
+-------------
+Everything is documented with doxygen. Run `make doc` to build the HTML5 docs.
