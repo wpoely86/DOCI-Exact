@@ -19,7 +19,7 @@ along with Hubbard-GPU.  If not, see <http://www.gnu.org/licenses/>.
 #include <iostream>
 #include <sstream>
 #include <iomanip>
-#include <boost/timer.hpp>
+#include <chrono>
 #include <getopt.h>
 
 #include "Permutation.h"
@@ -89,20 +89,32 @@ int main(int argc, char **argv)
 
     DOCIHamiltonian ham(mol);
 
+    auto start = std::chrono::high_resolution_clock::now();
     ham.Build();
+    auto end = std::chrono::high_resolution_clock::now();
+
+    cout << "Building took: " << std::fixed << std::chrono::duration_cast<std::chrono::duration<double,std::ratio<1>>>(end-start).count() << " s" << endl;
 
 //    auto eig = ham.DiagonalizeFull();
 //
 //    for(unsigned int i=0;i<eig.first.size();i++)
 //        cout << i << "\t" << eig.first[i] + mol.get_nucl_rep() << endl;
 
+    start = std::chrono::high_resolution_clock::now();
     auto eig2 = ham.Diagonalize();
+    end = std::chrono::high_resolution_clock::now();
+
+    cout << "Diagonalization took: " << std::chrono::duration_cast<std::chrono::duration<double,std::ratio<1>>>(end-start).count() << " s" << endl;
 
     cout << "E = " << eig2.first + mol.get_nucl_rep() << endl;
 
     DM2 rdm(mol);
     auto perm = ham.getPermutation();
+    start = std::chrono::high_resolution_clock::now();
     rdm.Build(perm, eig2.second);
+    end = std::chrono::high_resolution_clock::now();
+
+    cout << "Building 2DM took: " << std::chrono::duration_cast<std::chrono::duration<double,std::ratio<1>>>(end-start).count() << " s" << endl;
 
     DM2 rdm_ham(mol);
 
