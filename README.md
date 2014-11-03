@@ -15,6 +15,11 @@ the HDF5 libraries, the blas and lapack libraries and the arpack library. The
 Makefile is quite simple, adjust the compilers and header/libraries as needed
 for your system.
 
+Input
+-----
+The program needs molecular integrals from [PSI4](https://github.com/psi4/psi4public). 
+You can extract them using a plugin: https://gist.github.com/wpoely86/99cfad8adcecd7390606 
+
 Documentation
 -------------
 Everything is documented with doxygen. Run `make doc` to build the HTML5 docs.
