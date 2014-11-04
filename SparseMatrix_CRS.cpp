@@ -213,6 +213,7 @@ void SparseMatrix_CRS::NewRow()
  */
 void SparseMatrix_CRS::mvprod(const double *x, double *y, double beta) const
 {
+#pragma omp parallel
    for(unsigned int i=0;i<n;i++)
    {
       y[i] *= beta;
