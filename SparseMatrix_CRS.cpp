@@ -14,6 +14,7 @@ using namespace helpers;
 SparseMatrix_CRS::SparseMatrix_CRS(unsigned int n)
 {
     this->n = n;
+    row.reserve(n+1);
 }
 
 /**
@@ -450,6 +451,19 @@ double SparseMatrix_CRS::GetElementInRow(unsigned int row_index, unsigned int el
 unsigned int SparseMatrix_CRS::GetElementColIndexInRow(unsigned int row_index, unsigned int element_index) const
 {
    return col[row[row_index]+element_index];
+}
+
+
+/**
+ * Set a guess for the number of non-zero elements in
+ * the matrix. This method will reserve enough memory to store
+ * at least count elements
+ * @param the number of guessed non-zero elements
+ */
+void SparseMatrix_CRS::SetGuess(unsigned int count)
+{
+   data.reserve(count);
+   col.reserve(count);
 }
 
 /* vim: set ts=3 sw=3 expandtab :*/

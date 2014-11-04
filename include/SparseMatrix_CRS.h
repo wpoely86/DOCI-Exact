@@ -57,6 +57,8 @@ class SparseMatrix_CRS
 
       void mvprod(const double *, double *, double = 0) const;
 
+      void SetGuess(unsigned int);
+
       int WriteToFile(const char*,const char*,bool=false) const;
 
       int ReadFromFile(const char*,const char*);
