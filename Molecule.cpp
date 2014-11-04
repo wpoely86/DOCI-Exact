@@ -218,4 +218,27 @@ void Molecule::Print() const
                printf("%20.15f\t%d\t%d\t%d\t%d\n", (*TEI)(a*L+b,c*L+d), a+1,c+1,b+1,d+1);
 }
 
+/**
+ * This will calculate the (restricted) Hartree-Fock energy.
+ * @warning This will only work if the molecular orbitals are ordened
+ * according to energy! Not if they are ordened according to irrep (as 
+ * PSI does by default).
+ * @return the (restricted) Hartree-Fock energy
+ */
+double Molecule::HF_Energy() const
+{
+   double energy = 0;
+
+   // one particle terms
+   for(int a=0;a<n_electrons/2;a++)
+      energy += 2 * getT(a,a);
+
+   // two particle terms
+   for(int a=0;a<n_electrons/2;a++)
+      for(int b=0;b<n_electrons/2;b++)
+         energy += 2 * getV(a,b,a,b) - getV(a,b,b,a);
+
+   return energy;
+}
+
 /* vim: set ts=3 sw=3 expandtab :*/
