@@ -42,6 +42,8 @@ class Molecule
 
       void Print() const;
 
+      double HF_Energy() const;
+
    private:
       //! store the one electron matrix elements
       std::unique_ptr<helpers::matrix> OEI;

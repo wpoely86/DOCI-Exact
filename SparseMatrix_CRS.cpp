@@ -193,17 +193,18 @@ void SparseMatrix_CRS::NewRow()
 
    row.push_back(data.size());
 
-//   // fill the lower part with data
-//   // from the upper part
-//   for(unsigned int i=1;i<row.size();i++)
-//      for(unsigned int k=row[i-1];k<row[i];k++)
-//         if(col[k] < i)
-//         {
-//            data.push_back(data[k]);
-//            col.push_back(col[k]);
-//         }
-//         else 
-//            break;
+   // fill the lower part with data
+   // from the upper part
+   for(unsigned int j=1;j<row.size();j++)
+      for(unsigned int k=row[j-1]+1;k<row[j];k++)
+      {
+         if(col[k] == (row.size()-1))
+         {
+            data.push_back(data[k]);
+            col.push_back(j-1);
+            break;
+         }
+      }
 }
 
 /**
@@ -223,16 +224,6 @@ void SparseMatrix_CRS::mvprod(const double *x, double *y, double beta) const
       {
          y[i] += data[k] * x[col[k]];
       }
-
-      for(unsigned int j=0;j<i;j++)
-         for(unsigned int k=row[j]+1;k<row[j+1];k++)
-         {
-            if(col[k] == i)
-            {
-               y[i] += data[k] * x[j];
-               break;
-            }
-         }
    }
 }
 

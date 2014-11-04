@@ -87,7 +87,7 @@ int main(int argc, char **argv)
 
     Molecule mol(integralsfile);
 
-    cout << "HF energy = " << mol.HF_Energy() + mol.get_nucl_rep() << endl;
+    cout << "RHF energy = " << mol.HF_Energy() + mol.get_nucl_rep() << endl;
 
     DOCIHamiltonian ham(mol);
 

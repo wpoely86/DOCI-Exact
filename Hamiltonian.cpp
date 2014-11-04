@@ -87,6 +87,9 @@ unsigned int DOCIHamiltonian::getdim() const
  */
 void DOCIHamiltonian::Build()
 {
+   // we make room for and guess 50% of elements is non-zero
+   mat->SetGuess(mat->gn()*mat->gn()/2);
+
    auto &perm_bra = *permutations;
    perm_bra.reset();
 
@@ -274,7 +277,7 @@ std::pair< double,std::vector<double> > DOCIHamiltonian::Diagonalize() const
    while( ido != 99 )
    {
       // matrix-vector multiplication
-      mat->mvprod(workd.get()+ipntr[0]-1, workd.get()+ipntr[1]-1,0);
+      mat->mvprod(workd.get()+ipntr[0]-1, workd.get()+ipntr[1]-1);
 
       dsaupd_(&ido, &bmat, &n, &which[0], &nev, &tol, resid.get(), &ncv, v.get(), &ldv, iparam.get(), ipntr.get(), workd.get(), workl.get(), &lworkl, &info);
    }
