@@ -220,8 +220,8 @@ void Molecule::Print() const
 
 /**
  * This will calculate the (restricted) Hartree-Fock energy.
- * @warning This will only work if the molecular orbitals are ordened
- * according to energy! Not if they are ordened according to irrep (as 
+ * @warning This will only work if the molecular orbitals are sorted
+ * according to energy! Not if they are sorted according to irrep (as 
  * PSI does by default).
  * @return the (restricted) Hartree-Fock energy
  */
