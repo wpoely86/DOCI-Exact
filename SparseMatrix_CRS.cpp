@@ -2,6 +2,10 @@
 #include <hdf5.h>
 #include "SparseMatrix_CRS.h"
 
+#ifdef __INTEL_COMPILER
+#include <mkl.h>
+#endif
+
 // this helps to check the return codes of HDF5 calls
 #define HDF5_STATUS_CHECK(status) if(status < 0) std::cerr << __FILE__ << ":" << __LINE__ << ": Problem with writing to file. Status code=" << status << std::endl;
 
@@ -195,16 +199,16 @@ void SparseMatrix_CRS::NewRow()
 
    // fill the lower part with data
    // from the upper part
-   for(unsigned int j=1;j<row.size();j++)
-      for(unsigned int k=row[j-1]+1;k<row[j];k++)
-      {
-         if(col[k] == (row.size()-1))
-         {
-            data.push_back(data[k]);
-            col.push_back(j-1);
-            break;
-         }
-      }
+//   for(unsigned int j=1;j<row.size();j++)
+//      for(unsigned int k=row[j-1]+1;k<row[j];k++)
+//      {
+//         if(col[k] == (row.size()-1))
+//         {
+//            data.push_back(data[k]);
+//            col.push_back(j-1);
+//            break;
+//         }
+//      }
 }
 
 /**
@@ -215,16 +219,35 @@ void SparseMatrix_CRS::NewRow()
  */
 void SparseMatrix_CRS::mvprod(const double *x, double *y, double beta) const
 {
+#ifdef __INTEL_COMPILER
+   char uplo = 'U';
+
+   mkl_cspblas_dcsrsymv(&uplo, (const int *) &n, data.data(), (const int *) row.data(), (const int *) col.data(), x, y);
+#else
+
 #pragma omp parallel
    for(unsigned int i=0;i<n;i++)
    {
       y[i] *= beta;
 
+      // upper diagonal
       for(unsigned int k=row[i];k<row[i+1];k++)
       {
          y[i] += data[k] * x[col[k]];
       }
+
+      // lower diagonal
+      for(unsigned int j=0;j<i;j++)
+         for(unsigned int k=row[j]+1;k<row[j+1];k++)
+         {
+            if(col[k] == i)
+            {
+               y[i] += data[k] * x[j];
+               break;
+            }
+         }
    }
+#endif
 }
 
 /**
