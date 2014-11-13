@@ -100,6 +100,28 @@ matrix& matrix::operator=(double val)
     return *this;
 }
 
+matrix& matrix::operator+=(const matrix &orig)
+{
+    int dim = n*m;
+    int inc = 1;
+    double alpha = 1.0;
+
+    daxpy_(&dim,&alpha,orig.mat.get(),&inc,mat.get(),&inc);
+
+    return *this;
+}
+
+matrix& matrix::operator-=(const matrix &orig)
+{
+    int dim = n*m;
+    int inc = 1;
+    double alpha = -1.0;
+
+    daxpy_(&dim,&alpha,orig.mat.get(),&inc,mat.get(),&inc);
+
+    return *this;
+}
+
 /**
  * @return number of rows
  */

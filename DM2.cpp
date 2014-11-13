@@ -82,6 +82,14 @@ DM2& DM2::operator=(DM2 &&orig)
    return *this;
 }
 
+DM2& DM2::operator=(double val)
+{ 
+   (*block) = val;
+   std::fill(diag.begin(), diag.end(), val);
+
+   return *this;
+}
+
 /**
  * Access the element \f$\hat a^+_a \hat a^+_b \hat a_d \hat a_c\f$
  * of the second order density matrix
@@ -113,6 +121,26 @@ double DM2::operator()(int a, int b, int c, int d) const
       return sign * diag[(i-block->getn())%diag.size()];
    else
       return 0;
+}
+
+/**
+ * Add two DM2 object elementwise
+ * @param a the other DM2 object
+ * @return the sum of *this and a
+ */
+DM2& DM2::operator+=(const DM2 &a)
+{
+   (*block) += (*a.block);
+//   std::transform(diag.begin(), diag.end(), a.diag.begin(), diag.begin(), std::plus<double>());
+
+   int dim = diag.size();
+   int inc = 1;
+   double alpha = 1.0;
+   double *tmp = const_cast<double *>(a.diag.data());
+
+   daxpy_(&dim,&alpha,tmp,&inc,diag.data(),&inc);
+
+   return *this;
 }
 
 /**

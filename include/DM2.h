@@ -40,7 +40,11 @@ class DM2
 
       DM2& operator=(DM2 &&);
 
+      DM2& operator=(double);
+
       double operator()(int, int, int, int) const;
+
+      DM2& operator+=(const DM2 &);
 
       void WriteToFile(const std::string) const;
 

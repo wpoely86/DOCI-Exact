@@ -52,6 +52,10 @@ class matrix
 
         matrix& operator=(double val);
 
+        matrix& operator+=(const matrix &orig);
+
+        matrix& operator-=(const matrix &orig);
+
         int getn() const;
 
         int getm() const;
