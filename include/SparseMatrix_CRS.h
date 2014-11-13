@@ -55,7 +55,9 @@ class SparseMatrix_CRS
 
       void NewRow();
 
-      void mvprod(const double *, double *, double = 0) const;
+      void mvprod(const double *, double *) const;
+
+      void mvprod(const double *, double *, double) const;
 
       void SetGuess(unsigned int);
 

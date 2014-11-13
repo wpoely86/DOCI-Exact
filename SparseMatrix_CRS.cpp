@@ -217,7 +217,7 @@ void SparseMatrix_CRS::NewRow()
  * @param y a n component vector
  * @param beta the multiply factor for y
  */
-void SparseMatrix_CRS::mvprod(const double *x, double *y, double beta) const
+void SparseMatrix_CRS::mvprod(const double *x, double *y) const
 {
 #ifdef __INTEL_COMPILER
    char uplo = 'U';
@@ -225,6 +225,39 @@ void SparseMatrix_CRS::mvprod(const double *x, double *y, double beta) const
    mkl_cspblas_dcsrsymv(&uplo, (const int *) &n, data.data(), (const int *) row.data(), (const int *) col.data(), x, y);
 #else
 
+//#pragma omp parallel
+   for(unsigned int i=0;i<n;i++)
+   {
+      y[i] = 0;
+
+      // upper diagonal
+      for(unsigned int k=row[i];k<row[i+1];k++)
+      {
+         y[i] += data[k] * x[col[k]];
+      }
+
+      // lower diagonal
+      for(unsigned int j=0;j<i;j++)
+         for(unsigned int k=row[j]+1;k<row[j+1];k++)
+         {
+            if(col[k] == i)
+            {
+               y[i] += data[k] * x[j];
+               break;
+            }
+         }
+   }
+#endif
+}
+
+/**
+ * Do the matrix vector product y = A * x + beta * y
+ * @param x a m component vector
+ * @param y a n component vector
+ * @param beta the multiply factor for y
+ */
+void SparseMatrix_CRS::mvprod(const double *x, double *y, double beta) const
+{
 #pragma omp parallel
    for(unsigned int i=0;i<n;i++)
    {
@@ -247,7 +280,6 @@ void SparseMatrix_CRS::mvprod(const double *x, double *y, double beta) const
             }
          }
    }
-#endif
 }
 
 /**
