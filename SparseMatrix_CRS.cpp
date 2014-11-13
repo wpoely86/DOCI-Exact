@@ -212,10 +212,9 @@ void SparseMatrix_CRS::NewRow()
 }
 
 /**
- * Do the matrix vector product y = A * x + beta * y
+ * Do the matrix vector product y = A * x
  * @param x a m component vector
  * @param y a n component vector
- * @param beta the multiply factor for y
  */
 void SparseMatrix_CRS::mvprod(const double *x, double *y) const
 {
@@ -504,7 +503,7 @@ unsigned int SparseMatrix_CRS::GetElementColIndexInRow(unsigned int row_index, u
  * Set a guess for the number of non-zero elements in
  * the matrix. This method will reserve enough memory to store
  * at least count elements
- * @param the number of guessed non-zero elements
+ * @param count the number of guessed non-zero elements
  */
 void SparseMatrix_CRS::SetGuess(unsigned int count)
 {

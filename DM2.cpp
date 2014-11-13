@@ -86,6 +86,11 @@ DM2& DM2::operator=(DM2 &&orig)
    return *this;
 }
 
+/**
+ * Put all elements equal to the same value
+ * @param val the value to use
+ * @return *this
+ */
 DM2& DM2::operator=(double val)
 { 
    (*block) = val;
