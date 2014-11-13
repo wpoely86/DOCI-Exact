@@ -1,5 +1,9 @@
+#include <algorithm>
+#include <functional>
 #include <hdf5.h>
 #include <assert.h>
+#include <omp.h>
+#include <chrono>
 
 #include "DM2.h"
 #include "Hamiltonian.h"
@@ -359,13 +363,70 @@ unsigned int DM2::get_n_sp() const
  */
 void DM2::Build(Permutation &perm, std::vector<double> &eigv)
 {
-   (*block) = 0;
-   std::fill(diag.begin(), diag.end(), 0);
+   auto num_t = omp_get_max_threads();
+   unsigned long long num_elems = (eigv.size()*1ul*(eigv.size()+1ul))/2;
+   unsigned long long size_part = num_elems/num_t + 1;
+
+   // every thread should process the lines between i and i+1 
+   // with i the thread number
+   std::vector<unsigned int> workload(num_t+1);
+   workload.front() = 0;
+   workload.back() = eigv.size();
+
+   for(int i=1;i<num_t;i++)
+   {
+      auto num_lines = workload[i-1];
+      unsigned long long num_elems = 0;
+
+      while(num_elems < size_part)
+         num_elems += eigv.size() - num_lines++;
+
+      if(num_lines > eigv.size())
+         num_lines = eigv.size();
+
+      workload[i] = num_lines;
+   }
+
+   std::vector< std::unique_ptr<DM2> > dm2_parts(num_t);
+
+   std::cout << "Running with " << num_t << " threads." << std::endl;
 
    perm.reset();
+
+#pragma omp parallel
+   {
+      auto start = std::chrono::high_resolution_clock::now();
+      auto me = omp_get_thread_num();
+
+      dm2_parts[me].reset(new DM2(block->getn(),N));
+      (*dm2_parts[me]) = 0;
+
+      Permutation my_perm(perm);
+
+      for(auto idx_begin=0;idx_begin<workload[me];++idx_begin)
+         my_perm.next();
+
+      auto vec_copy = eigv;
+
+      build_iter(my_perm, vec_copy, workload[me], workload[me+1], (*dm2_parts[me]));
+
+      auto end = std::chrono::high_resolution_clock::now();
+
+#pragma omp critical
+      std::cout << me << "\t" << std::chrono::duration_cast<std::chrono::duration<double,std::ratio<1>>>(end-start).count() << " s" << std::endl;
+   }
+
+   // add everything
+   (*this) = 0;
+   for(auto &cur_dm2: dm2_parts)
+      (*this) += (*cur_dm2);
+}
+
+void DM2::build_iter(Permutation& perm, std::vector<double> &eigv, unsigned int i_start, unsigned int i_end, DM2 &cur_2dm)
+{
    auto& perm_bra = perm;
 
-   for(unsigned int i=0;i<eigv.size();++i)
+   for(unsigned int i=i_start;i<i_end;++i)
    {
       const auto bra = perm_bra.get();
 
@@ -385,7 +446,7 @@ void DM2::Build(Permutation &perm, std::vector<double> &eigv)
          auto s = DOCIHamiltonian::CountBits(ksp-1);
 
          // in this case: s == (*sp2tp)(s,s+L)
-         (*block)(s,s) += eigv[i] * eigv[i];
+         (*cur_2dm.block)(s,s) += eigv[i] * eigv[i];
 
          auto cur2 = cur; 
 
@@ -404,7 +465,7 @@ void DM2::Build(Permutation &perm, std::vector<double> &eigv)
             idx -= block->getn();
             idx %= diag.size();
 
-            diag[idx] += eigv[i] * eigv[i];
+            cur_2dm.diag[idx] += eigv[i] * eigv[i];
          }
       }
 
@@ -434,8 +495,8 @@ void DM2::Build(Permutation &perm, std::vector<double> &eigv)
             // in this case:
             // r == (*sp2tp)(r,r+L)
             // s == (*sp2tp)(s,s+L)
-            (*block)(r,s) += eigv[i] * eigv[j];
-            (*block)(s,r) += eigv[i] * eigv[j];
+            (*cur_2dm.block)(r,s) += eigv[i] * eigv[j];
+            (*cur_2dm.block)(s,r) += eigv[i] * eigv[j];
          }
       }
 

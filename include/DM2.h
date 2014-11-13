@@ -64,6 +64,8 @@ class DM2
 
    private:
 
+      void build_iter(Permutation& , std::vector<double> &, unsigned int , unsigned int , DM2 &);
+
       void fill_lists(unsigned int);
 
       //! convert single particles indices to two particles indices
