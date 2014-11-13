@@ -13,13 +13,13 @@ OBJ=$(CPPSRC:.cpp=.o)
 EXE=doci
 
 # The compilers
-CC=gcc
-CXX=g++
+CC = clang
+CXX = g++
 
 # compile and link flags
-CFLAGS=-Iinclude -g -Wall -O2 -march=native -std=c++11 # -DNDEBUG
+CFLAGS=-Iinclude -g -Wall -O2 -march=native -std=c++11 -fopenmp -Wno-sign-compare # -DNDEBUG
 CPPFLAGS=$(CFLAGS)
-LDFLAGS=-g -O2 -Wall -march=native
+LDFLAGS=-g -O2 -Wall -march=native -fopenmp
 
 # location of headers and libraries
 INCLUDE=
