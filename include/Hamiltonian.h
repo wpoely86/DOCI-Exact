@@ -48,6 +48,9 @@ class DOCIHamiltonian
 
       static int CalcSign(unsigned int i,unsigned int j, const mybitset a);
 
+      void SaveToFile(std::string) const;
+
+      void ReadFromFile(std::string);
    private:
 
       void Build_iter(Permutation &, helpers::SparseMatrix_CRS &,unsigned int, unsigned int, Molecule &);

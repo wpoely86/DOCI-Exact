@@ -92,8 +92,22 @@ int main(int argc, char **argv)
     DOCIHamiltonian ham(mol);
 
     auto start = std::chrono::high_resolution_clock::now();
-    ham.Build();
+    if(getenv("READ_SPARSE_H5_FILE"))
+    {
+        std::stringstream h5_name;
+        h5_name << getenv("READ_SPARSE_H5_FILE");
+        ham.ReadFromFile(h5_name.str());
+    }
+    else
+        ham.Build();
     auto end = std::chrono::high_resolution_clock::now();
+
+    if(getenv("SAVE_SPARSE_H5_FILE"))
+    {
+        std::stringstream h5_name;
+        h5_name << getenv("SAVE_SPARSE_H5_FILE");
+        ham.SaveToFile(h5_name.str());
+    }
 
     cout << "Building took: " << std::fixed << std::chrono::duration_cast<std::chrono::duration<double,std::ratio<1>>>(end-start).count() << " s" << endl;
 

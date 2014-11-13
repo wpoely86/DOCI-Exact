@@ -90,18 +90,6 @@ unsigned int DOCIHamiltonian::getdim() const
  */
 void DOCIHamiltonian::Build()
 {
-/*    std::stringstream h5_name;
- * 
- *    if(getenv("SAVE_SPARSE_H5_FILE"))
- *       h5_name << getenv("SAVE_SPARSE_H5_FILE");
- *    else
- *       h5_name << "ham.h5";
- * 
- *    mat->ReadFromFile(h5_name.str().c_str(), "ham");
- * 
- *    return;
- */
-
    auto num_t = omp_get_max_threads();
    unsigned long long num_elems = (getdim()*1ul*(getdim()+1ul))/2;
    unsigned long long size_part = num_elems/num_t + 1;
@@ -156,16 +144,6 @@ void DOCIHamiltonian::Build()
    }
 
    mat->AddList(smat_parts);
-
-/*    std::stringstream h5_name;
- * 
- *    if(getenv("SAVE_SPARSE_H5_FILE"))
- *       h5_name << getenv("SAVE_SPARSE_H5_FILE");
- *    else
- *       h5_name << "ham.h5";
- * 
- *    mat->WriteToFile(h5_name.str().c_str(), "ham");
- */
 }
 
 /**
@@ -444,6 +422,27 @@ int DOCIHamiltonian::CalcSign(unsigned int i,unsigned int j, const mybitset a)
         return -1;
     else
         return +1;
+}
+
+/**
+ * Save the sparse matrix to a file. Stores only the sparse matrix,
+ * not number of electrons, ...
+ * @param filename the name of the file
+ */
+void DOCIHamiltonian::SaveToFile(std::string filename) const
+{
+   mat->WriteToFile(filename.c_str(), "ham");
+}
+
+/**
+ * Read the sparse matrix from a file. Reads only the sparse matrix,
+ * not number of electrons, ...
+ * You still need to construct a object first with a suited Molecule object.
+ * @param filename the name of the file
+ */
+void DOCIHamiltonian::ReadFromFile(std::string filename)
+{
+   mat->ReadFromFile(filename.c_str(), "ham");
 }
 
 /* vim: set ts=3 sw=3 expandtab :*/
