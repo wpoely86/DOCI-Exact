@@ -13,7 +13,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with Hubbard-GPU.  If not, see <http://www.gnu.org/licenses/>.
+along with DOCI-Exact.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include <iostream>
@@ -37,7 +37,7 @@ using namespace doci;
  * The Molecule object holds the atomic/molecular integrals to use.
  *
  * @author Ward Poelmans <wpoely86@gmail.com>
- * @version   0.1
+ * @version   0.3
  * @date      2014
  * @copyright GNU Public License v3
  */
