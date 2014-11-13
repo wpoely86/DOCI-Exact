@@ -50,6 +50,8 @@ class DOCIHamiltonian
 
    private:
 
+      void Build_iter(Permutation &, helpers::SparseMatrix_CRS &,unsigned int, unsigned int, Molecule &);
+
       std::unique_ptr<Permutation> permutations;
 
       std::unique_ptr<Molecule> molecule;

@@ -1,4 +1,7 @@
 #include <stdexcept>
+#include <sstream>
+#include <chrono>
+#include <omp.h>
 #include <assert.h>
 
 #include "lapack.h"
@@ -87,17 +90,101 @@ unsigned int DOCIHamiltonian::getdim() const
  */
 void DOCIHamiltonian::Build()
 {
-   // we make room for and guess 50% of elements is non-zero
-   mat->SetGuess(mat->gn()*mat->gn()/2);
+/*    std::stringstream h5_name;
+ * 
+ *    if(getenv("SAVE_SPARSE_H5_FILE"))
+ *       h5_name << getenv("SAVE_SPARSE_H5_FILE");
+ *    else
+ *       h5_name << "ham.h5";
+ * 
+ *    mat->ReadFromFile(h5_name.str().c_str(), "ham");
+ * 
+ *    return;
+ */
 
-   auto &perm_bra = *permutations;
-   perm_bra.reset();
+   auto num_t = omp_get_max_threads();
+   unsigned long long num_elems = (getdim()*1ul*(getdim()+1ul))/2;
+   unsigned long long size_part = num_elems/num_t + 1;
 
-   for(unsigned int i=0;i<mat->gn();++i)
+   // every thread should process the lines between i and i+1 
+   // with i the thread number
+   std::vector<unsigned int> workload(num_t+1);
+   workload.front() = 0;
+   workload.back() = getdim();
+
+   for(int i=1;i<num_t;i++)
+   {
+      auto num_lines = workload[i-1];
+      unsigned long long num_elems = 0;
+
+      while(num_elems < size_part)
+         num_elems += getdim() - num_lines++;
+
+      if(num_lines > getdim())
+         num_lines = getdim();
+
+      workload[i] = num_lines;
+   }
+
+   std::vector< std::unique_ptr<helpers::SparseMatrix_CRS> > smat_parts(num_t);
+
+   std::cout << "Running with " << num_t << " threads." << std::endl;
+
+   permutations->reset();
+
+#pragma omp parallel
+   {
+      auto start = std::chrono::high_resolution_clock::now();
+      auto me = omp_get_thread_num();
+
+      smat_parts[me].reset(new helpers::SparseMatrix_CRS(workload[me+1] - workload[me]));
+
+      Permutation my_perm(*permutations);
+      for(auto idx_begin=0;idx_begin<workload[me];++idx_begin)
+         my_perm.next();
+
+      // this costs some memory, make it an alias to
+      // decrease memory usage but increase runtime
+      auto my_mol = (*molecule);
+
+      Build_iter(my_perm, (*smat_parts[me]), workload[me], workload[me+1], my_mol);
+
+      auto end = std::chrono::high_resolution_clock::now();
+
+#pragma omp critical
+      std::cout << me << "\t" << std::chrono::duration_cast<std::chrono::duration<double,std::ratio<1>>>(end-start).count() << " s" << std::endl;
+   }
+
+   mat->AddList(smat_parts);
+
+/*    std::stringstream h5_name;
+ * 
+ *    if(getenv("SAVE_SPARSE_H5_FILE"))
+ *       h5_name << getenv("SAVE_SPARSE_H5_FILE");
+ *    else
+ *       h5_name << "ham.h5";
+ * 
+ *    mat->WriteToFile(h5_name.str().c_str(), "ham");
+ */
+}
+
+/**
+ * Internal method: this will iterate and build a part of the full sparse hamiltonian matrix
+ * @param perm the start permutation to use
+ * @param mat where to store the sparse matrix data
+ * @param i_start the start point to iter
+ * @param i_end the end point of the iterations
+ * @param mol the molecule data to use
+ */
+void DOCIHamiltonian::Build_iter(Permutation &perm, helpers::SparseMatrix_CRS &mat,unsigned int i_start, unsigned int i_end, Molecule &mol)
+{
+   auto &perm_bra = perm;
+
+   for(unsigned int i=i_start;i<i_end;++i)
    {
       const auto bra = perm_bra.get();
 
-      mat->NewRow();
+      mat.NewRow();
 
       // do all diagonal terms
       auto cur = bra;
@@ -115,10 +202,10 @@ void DOCIHamiltonian::Build()
          auto s = CountBits(ksp-1);
 
          // OEI part
-         tmp += 2 * molecule->getT(s, s);
+         tmp += 2 * mol.getT(s, s);
 
          // TEI: part a \bar a ; a \bar a
-         tmp += molecule->getV(s, s, s, s);
+         tmp += mol.getV(s, s, s, s);
 
          auto cur2 = cur; 
 
@@ -141,16 +228,16 @@ void DOCIHamiltonian::Build()
             // with a < b
             // The second term (ab|V|ba) is not possible in the second
             // case, so only a prefactor of 2 instead of 4.
-            tmp += 4 * molecule->getV(r, s, r, s);
-            tmp -= 2 * molecule->getV(r, s, s, r);
+            tmp += 4 * mol.getV(r, s, r, s);
+            tmp -= 2 * mol.getV(r, s, s, r);
          }
       }
 
-      mat->PushToRowNext(i, tmp);
+      mat.PushToRowNext(i, tmp);
 
       Permutation perm_ket(perm_bra);
 
-      for(unsigned int j=i+1;j<mat->gn();++j)
+      for(unsigned int j=i+1;j<getdim();++j)
       {
          const auto ket = perm_ket.next();
 
@@ -173,17 +260,13 @@ void DOCIHamiltonian::Build()
             auto s = CountBits(ksp2-1);
 
             // TEI: a \bar a ; b \bar b
-            mat->PushToRowNext(j, molecule->getV(s, s, r, r));
+            mat.PushToRowNext(j, mol.getV(s, s, r, r));
          } 
       }
 
       perm_bra.next();
    }
-
-   // closed the matrix properly
-   mat->NewRow();
 }
-
 
 /**
  * Calcalate the lowest eigenvalue and eigenvector using lanczos method.

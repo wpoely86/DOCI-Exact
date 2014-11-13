@@ -512,4 +512,50 @@ void SparseMatrix_CRS::SetGuess(unsigned int count)
    col.reserve(count);
 }
 
+/**
+ * Add a bunch of non-overlapping, in order, Sparse Matrices together to the current object (overwriting any
+ * previous data). This is used if threads each builded a part of the matrix into seperate 
+ * SparseMatrix_CRS objects. After the parallel part, this method builds the final Sparse Matrix.
+ * We also assume that the matrices in the list are in order: the first rows first, etc
+ * This method is tuned for the DOCIHamiltonian::Build_iter(), it's not general!
+ * @warning this means you will have 2 copies of the entire Sparse Matrix in memory during this
+ * method.
+ * @param list the list of pointer to the Sparse Matrices
+ */
+void SparseMatrix_CRS::AddList(std::vector< std::unique_ptr<SparseMatrix_CRS> > &list)
+{
+   unsigned int total_size = 0;
+
+   for(auto& smat : list)
+      total_size += smat->data.size();
+
+   data.reserve(total_size);
+   col.reserve(total_size);
+
+   data.clear();
+   col.clear();
+
+   row.reserve(n+1);
+   row.clear();
+
+   for(auto &smat: list)
+   {
+      auto prev_start = data.size();
+
+      data.insert(data.end(), smat->data.begin(), smat->data.end());
+      col.insert(col.end(), smat->col.begin(), smat->col.end());
+
+      for(unsigned int i=0;i<smat->row.size();++i)
+         row.push_back(prev_start + smat->row[i]);
+
+      smat.reset();
+   }
+
+   assert(data.size() == total_size);
+   assert(col.size() == total_size);
+   assert(row.size() == n);
+
+   row.push_back(data.size());
+}
+
 /* vim: set ts=3 sw=3 expandtab :*/

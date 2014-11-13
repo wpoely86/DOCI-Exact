@@ -71,6 +71,8 @@ class SparseMatrix_CRS
 
       unsigned int GetElementColIndexInRow(unsigned int row_index, unsigned int element_index) const;
 
+      void AddList(std::vector< std::unique_ptr<SparseMatrix_CRS> > &);
+
    private:
 
       //! Array that holds the non zero values
