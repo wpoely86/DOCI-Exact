@@ -17,7 +17,7 @@ using namespace doci;
 DOCIHamiltonian::DOCIHamiltonian(const Permutation &perm, const Molecule &mol)
 {
    permutations.reset(new Permutation(perm));
-   molecule.reset(new Molecule(mol));
+   molecule.reset(mol.clone());
 
    if(molecule->get_n_electrons() % 2 != 0)
       throw("We need even number of electrons!");
@@ -34,7 +34,7 @@ DOCIHamiltonian::DOCIHamiltonian(const Permutation &perm, const Molecule &mol)
  */
 DOCIHamiltonian::DOCIHamiltonian(const Molecule &mol)
 {
-   molecule.reset(new Molecule(mol));
+   molecule.reset(mol.clone());
 
    if(molecule->get_n_electrons() % 2 != 0)
       throw("We need even number of electrons!");
@@ -48,14 +48,14 @@ DOCIHamiltonian::DOCIHamiltonian(const Molecule &mol)
 DOCIHamiltonian::DOCIHamiltonian(const DOCIHamiltonian &orig)
 {
    permutations.reset(new Permutation(*orig.permutations));
-   molecule.reset(new Molecule(*orig.molecule));
+   molecule.reset(orig.molecule->clone());
    mat.reset(new helpers::SparseMatrix_CRS(*orig.mat));
 }
 
 DOCIHamiltonian& DOCIHamiltonian::operator=(const DOCIHamiltonian &orig)
 {
    permutations.reset(new Permutation(*orig.permutations));
-   molecule.reset(new Molecule(*orig.molecule));
+   molecule.reset(orig.molecule->clone());
    mat.reset(new helpers::SparseMatrix_CRS(*orig.mat));
 
    return *this;
@@ -133,9 +133,9 @@ void DOCIHamiltonian::Build()
 
       // this costs some memory, make it an alias to
       // decrease memory usage but increase runtime
-      auto my_mol = (*molecule);
+      auto my_mol = std::unique_ptr<Molecule> (molecule->clone());
 
-      Build_iter(my_perm, (*smat_parts[me]), workload[me], workload[me+1], my_mol);
+      Build_iter(my_perm, (*smat_parts[me]), workload[me], workload[me+1], *my_mol);
 
       auto end = std::chrono::high_resolution_clock::now();
 

@@ -11,6 +11,32 @@ using namespace doci;
 #define HDF5_STATUS_CHECK(status) if(status < 0) std::cerr << __FILE__ << ":" << __LINE__ << ": Problem with writing to file. Status code=" << status << std::endl;
 
 /**
+ * @return the nuclear replusion energy
+ */
+double Molecule::get_nucl_rep() const
+{
+   return nucl_rep;
+}
+
+/**
+ * @return size of the single particle basis (without spin)
+ */
+unsigned int Molecule::get_n_sp() const
+{
+   return n_sp;
+}
+
+/**
+ * @return number of electrons
+ */
+unsigned int Molecule::get_n_electrons() const
+{
+   return n_electrons;
+}
+
+
+
+/**
  * Constructor. This reads a HDF5 file with the integrals. It expects following
  * file format:
  * /integrals/OEI => array with One electron integrals
@@ -21,7 +47,7 @@ using namespace doci;
  * - sp_dim => size of the single particles basis
  * @param filename the HDF5 file to read the OEI and TEI from
  */
-Molecule::Molecule(std::string filename)
+PSI_C1_Molecule::PSI_C1_Molecule(std::string filename)
 {
    hid_t       file_id, group_id, dataset_id, attribute_id;
    herr_t      status;
@@ -95,7 +121,7 @@ Molecule::Molecule(std::string filename)
 /**
  * Copy constructor
  */
-Molecule::Molecule(const Molecule &orig)
+PSI_C1_Molecule::PSI_C1_Molecule(const PSI_C1_Molecule &orig)
 {
    OEI.reset(new helpers::matrix(*orig.OEI));
    TEI.reset(new helpers::matrix(*orig.TEI));
@@ -104,12 +130,11 @@ Molecule::Molecule(const Molecule &orig)
    nucl_rep = orig.nucl_rep;
    n_sp = orig.n_sp;
 }
-
 
 /**
  * Move constructor
  */
-Molecule::Molecule(Molecule &&orig)
+PSI_C1_Molecule::PSI_C1_Molecule(PSI_C1_Molecule &&orig)
 {
    OEI = std::move(orig.OEI);
    TEI = std::move(orig.TEI);
@@ -119,7 +144,7 @@ Molecule::Molecule(Molecule &&orig)
    n_sp = orig.n_sp;
 }
 
-Molecule& Molecule::operator=(const Molecule &orig)
+PSI_C1_Molecule& PSI_C1_Molecule::operator=(const PSI_C1_Molecule &orig)
 {
    OEI.reset(new helpers::matrix(*orig.OEI));
    TEI.reset(new helpers::matrix(*orig.TEI));
@@ -131,7 +156,7 @@ Molecule& Molecule::operator=(const Molecule &orig)
    return *this;
 }
 
-Molecule& Molecule::operator=(Molecule &&orig)
+PSI_C1_Molecule& PSI_C1_Molecule::operator=(PSI_C1_Molecule &&orig)
 {
    OEI = std::move(orig.OEI);
    TEI = std::move(orig.TEI);
@@ -141,6 +166,17 @@ Molecule& Molecule::operator=(Molecule &&orig)
    n_sp = orig.n_sp;
 
    return *this;
+}
+
+/**
+ * Clone the current object. Needed because
+ * the base class is pure virtual and thus has
+ * no copy constructor.
+ * @return a clone of this object
+ */
+PSI_C1_Molecule* PSI_C1_Molecule::clone() const
+{
+   return new PSI_C1_Molecule(*this);
 }
 
 /**
@@ -150,7 +186,7 @@ Molecule& Molecule::operator=(Molecule &&orig)
  * @param b the second sp index
  * @return \f$<a|\hat T|b>\f$
  */
-double Molecule::getT(int a, int b) const
+double PSI_C1_Molecule::getT(int a, int b) const
 {
    assert(a<n_sp && b<n_sp);
 
@@ -166,43 +202,18 @@ double Molecule::getT(int a, int b) const
  * @param d the fourth sp index
  * @return \f$<ab|\hat V|cd>\f$
  */
-double Molecule::getV(int a, int b, int c, int d) const
+double PSI_C1_Molecule::getV(int a, int b, int c, int d) const
 {
    assert(a<n_sp && b<n_sp && c<n_sp && d<n_sp);
 
    return (*TEI)(a*n_sp + b, c*n_sp + d);
 }
 
-
-/**
- * @return the nuclear replusion energy
- */
-double Molecule::get_nucl_rep() const
-{
-   return nucl_rep;
-}
-
-/**
- * @return size of the single particle basis (without spin)
- */
-unsigned int Molecule::get_n_sp() const
-{
-   return n_sp;
-}
-
-/**
- * @return number of electrons
- */
-unsigned int Molecule::get_n_electrons() const
-{
-   return n_electrons;
-}
-
 /**
  * Print the molecular integrals. Usefull for input into
  * other codes
  */
-void Molecule::Print() const
+void PSI_C1_Molecule::Print() const
 {
    auto L = get_n_sp();
 
@@ -225,7 +236,7 @@ void Molecule::Print() const
  * PSI does by default).
  * @return the (restricted) Hartree-Fock energy
  */
-double Molecule::HF_Energy() const
+double PSI_C1_Molecule::HF_Energy() const
 {
    double energy = 0;
 

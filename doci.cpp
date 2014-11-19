@@ -85,7 +85,7 @@ int main(int argc, char **argv)
 
     cout << "Reading: " << integralsfile << endl;
 
-    Molecule mol(integralsfile);
+    PSI_C1_Molecule mol(integralsfile);
 
     cout << "RHF energy = " << mol.HF_Energy() + mol.get_nucl_rep() << endl;
 
