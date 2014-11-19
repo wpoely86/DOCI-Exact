@@ -61,6 +61,8 @@ flags = [
 '.',
 '-I',
 'include',
+'-I',
+'/home/ward/Documents/phd/CIFlowImproved/include',
 # for omp.h:
 '-isystem',
 '/usr/lib/gcc/x86_64-redhat-linux/4.8.3/include/',

@@ -6,6 +6,7 @@ CPPSRC= helpers.cpp\
 	DOCIHamiltonian.cpp\
 	SparseMatrix_CRS.cpp\
 	DM2.cpp\
+	SymMolecule.cpp\
 
 OBJ=$(CPPSRC:.cpp=.o)
 
@@ -16,14 +17,16 @@ EXE=doci
 CC = clang
 CXX = g++
 
+CIFLOW=/home/ward/Documents/phd/CIFlowImproved
+
 # compile and link flags
-CFLAGS=-Iinclude -g -Wall -O2 -march=native -std=c++11 -fopenmp -Wno-sign-compare # -DNDEBUG
+CFLAGS=-Iinclude -I$(CIFLOW)/include -g -Wall -O2 -march=native -std=c++11 -fopenmp -Wno-sign-compare # -DNDEBUG
 CPPFLAGS=$(CFLAGS)
 LDFLAGS=-g -O2 -Wall -march=native -fopenmp
 
 # location of headers and libraries
 INCLUDE=
-LIBS=-lblas -llapack -larpack -lhdf5
+LIBS=-lblas -llapack -larpack -lhdf5 -L$(CIFLOW)/lib -lward
 #LIBS=-lmkl_intel_lp64 -lmkl_sequential -lmkl_core -liomp5 -lpthread -lhdf5 -larpack
 
 

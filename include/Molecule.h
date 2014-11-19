@@ -24,11 +24,11 @@ class Molecule
 
       virtual double getV(int, int, int, int) const = 0;
 
-      double get_nucl_rep() const;
+      virtual double get_nucl_rep() const;
 
-      unsigned int get_n_sp() const;
+      virtual unsigned int get_n_sp() const;
 
-      unsigned int get_n_electrons() const;
+      virtual unsigned int get_n_electrons() const;
 
    protected:
 
