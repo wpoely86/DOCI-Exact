@@ -20,7 +20,7 @@ CXX = g++
 CIFLOW=/home/ward/Documents/phd/CIFlowImproved
 
 # compile and link flags
-CFLAGS=-Iinclude -I$(CIFLOW)/include -g -Wall -O2 -march=native -std=c++11 -fopenmp -Wno-sign-compare # -DNDEBUG
+CFLAGS=-Iinclude -g -Wall -O2 -march=native -std=c++11 -fopenmp -Wno-sign-compare # -DNDEBUG
 CPPFLAGS=$(CFLAGS)
 LDFLAGS=-g -O2 -Wall -march=native -fopenmp
 

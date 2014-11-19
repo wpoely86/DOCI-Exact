@@ -3,7 +3,7 @@
 
 #include "SymMolecule.h"
 // From CIFLOW 
-#include <Hamiltonian.h>
+#include <CIFLow/Hamiltonian.h>
 
 doci::Sym_Molecule::Sym_Molecule(std::string filename) : ham(nullptr)
 {
