@@ -24,7 +24,7 @@ along with DOCI-Exact.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "Permutation.h"
 #include "Molecule.h"
-#include "Hamiltonian.h"
+#include "DOCIHamtilonian.h"
 #include "DM2.h"
 
 using namespace doci;

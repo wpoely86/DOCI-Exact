@@ -5,7 +5,7 @@
 #include <assert.h>
 
 #include "lapack.h"
-#include "Hamiltonian.h"
+#include "DOCIHamtilonian.h"
 
 using namespace doci;
 

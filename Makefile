@@ -3,7 +3,7 @@
 CPPSRC= helpers.cpp\
 	Permutation.cpp\
 	Molecule.cpp\
-	Hamiltonian.cpp\
+	DOCIHamiltonian.cpp\
 	SparseMatrix_CRS.cpp\
 	DM2.cpp\
 

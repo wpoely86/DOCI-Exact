@@ -6,7 +6,7 @@
 #include <chrono>
 
 #include "DM2.h"
-#include "Hamiltonian.h"
+#include "DOCIHamtilonian.h"
 #include "lapack.h"
 
 using namespace doci;
