@@ -48,6 +48,8 @@ class DOCIHamiltonian
 
       std::pair< double,std::vector<double> > Diagonalize() const;
 
+      double CalcEnergy() const;
+
       static unsigned int CountBits(mybitset);
 
       static int CalcSign(unsigned int i,unsigned int j, const mybitset a);
@@ -56,6 +58,8 @@ class DOCIHamiltonian
 
       void ReadFromFile(std::string);
    private:
+
+      void Diagonalize_arpack(double &energy, std::vector<double> &eigv, bool eigvec) const;
 
       void Build_iter(Permutation &, helpers::SparseMatrix_CRS &,unsigned int, unsigned int, Molecule &);
 

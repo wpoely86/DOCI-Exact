@@ -275,6 +275,38 @@ void DOCIHamiltonian::Build_iter(Permutation &perm, helpers::SparseMatrix_CRS &m
  */
 std::pair< double,std::vector<double> > DOCIHamiltonian::Diagonalize() const
 {
+   double energy;
+   std::vector<double> eigv(mat->gn());
+
+   Diagonalize_arpack(energy,eigv,true);
+
+   return std::make_pair(energy, std::move(eigv));
+}
+
+/**
+ * Calcalate the lowest eigenvalue using lanczos method.
+ * We use arpack for this.
+ * @return the lowest eigenvalue
+ */
+double DOCIHamiltonian::CalcEnergy() const
+{
+   double energy;
+   std::vector<double> eigv(0);
+
+   Diagonalize_arpack(energy,eigv,false);
+
+   return energy;
+}
+
+/**
+ * Calcalate the lowest eigenvalue and (depending on eigvec) eigenvector using lanczos method.
+ * We use arpack for this.
+ * @param energy on return will hold the lowest eigenvalue
+ * @param eigv on return will hold the lowest eigenvector
+ * @param eigvec if true, calc the eigenvector and store in eigv
+ */
+void DOCIHamiltonian::Diagonalize_arpack(double &energy, std::vector<double> &eigv, bool eigvec) const
+{
    // dimension of the matrix
    int n = mat->gn();
 
@@ -333,7 +365,9 @@ std::pair< double,std::vector<double> > DOCIHamiltonian::Diagonalize() const
 
    // rvec == 0 : calculate only eigenvalue
    // rvec > 0 : calculate eigenvalue and eigenvector
-   int rvec = 1;
+   int rvec = 0;
+   if(eigvec)
+      rvec = 1;
 
    // how many eigenvectors to calculate: 'A' => nev eigenvectors
    char howmny = 'A';
@@ -346,9 +380,7 @@ std::pair< double,std::vector<double> > DOCIHamiltonian::Diagonalize() const
    // This vector will return the eigenvalues from the second routine, dseupd.
    std::unique_ptr<double []> d(new double[nev]);
 
-   std::vector<double> eigv;
-
-   if(rvec)
+   if(eigvec)
       eigv.resize(n);
 
    // not used if iparam[6] == 1
@@ -377,7 +409,7 @@ std::pair< double,std::vector<double> > DOCIHamiltonian::Diagonalize() const
    if ( info != 0 )
       std::cerr << "Error with dseupd, info = " << info << std::endl;
 
-   return std::make_pair(d[0], std::move(eigv));
+   energy = d[0];
 }
 
 /**
