@@ -179,6 +179,11 @@ PSI_C1_Molecule* PSI_C1_Molecule::clone() const
    return new PSI_C1_Molecule(*this);
 }
 
+PSI_C1_Molecule* PSI_C1_Molecule::move()
+{
+   return new PSI_C1_Molecule(std::move(*this));
+}
+
 /**
  * Get the matrix element \f$<a|\hat T|b>\f$ where T is the
  * one body operator

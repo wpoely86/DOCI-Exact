@@ -5,7 +5,7 @@
 #include "Molecule.h"
 
 // not part of our namespace
-class Hamiltonian;
+namespace CheMPS2 {  class Hamiltonian; }
 
 namespace doci {
 
@@ -27,6 +27,8 @@ class Sym_Molecule: public Molecule
 
         Sym_Molecule* clone() const;
 
+        Sym_Molecule* move();
+
         double getT(int, int) const;
 
         double getV(int, int, int, int) const;
@@ -39,11 +41,13 @@ class Sym_Molecule: public Molecule
 
         unsigned int get_n_electrons() const;
 
-        Hamiltonian& getHamObject() const;
+        CheMPS2::Hamiltonian& getHamObject() const;
+
+        CheMPS2::Hamiltonian& getHamObject();
 
     private:
 
-        std::unique_ptr<Hamiltonian> ham;
+        std::unique_ptr<CheMPS2::Hamiltonian> ham;
 };
 
 }

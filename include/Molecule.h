@@ -20,6 +20,8 @@ class Molecule
 
       virtual Molecule* clone() const = 0;
 
+      virtual Molecule* move() = 0;
+
       virtual double getT(int, int) const = 0;
 
       virtual double getV(int, int, int, int) const = 0;
@@ -64,6 +66,8 @@ class PSI_C1_Molecule: public Molecule
       PSI_C1_Molecule& operator=(PSI_C1_Molecule &&);
 
       PSI_C1_Molecule* clone() const;
+
+      PSI_C1_Molecule* move();
 
       double getT(int, int) const;
 

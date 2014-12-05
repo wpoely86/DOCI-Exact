@@ -45,6 +45,20 @@ DOCIHamiltonian::DOCIHamiltonian(const Molecule &mol)
    mat.reset(new helpers::SparseMatrix_CRS(dim));
 }
 
+DOCIHamiltonian::DOCIHamiltonian(Molecule &&mol)
+{
+   molecule.reset(mol.move());
+
+   if(molecule->get_n_electrons() % 2 != 0)
+      throw("We need even number of electrons!");
+
+   permutations.reset(new Permutation(molecule->get_n_electrons()/2));
+
+   auto dim = Permutation::CalcCombinations(molecule->get_n_sp(), molecule->get_n_electrons()/2);
+   mat.reset(new helpers::SparseMatrix_CRS(dim));
+}
+
+
 DOCIHamiltonian::DOCIHamiltonian(const DOCIHamiltonian &orig)
 {
    permutations.reset(new Permutation(*orig.permutations));
@@ -65,6 +79,14 @@ DOCIHamiltonian& DOCIHamiltonian::operator=(const DOCIHamiltonian &orig)
  * @return the Molecule object
  */
 Molecule const & DOCIHamiltonian::getMolecule() const
+{
+   return *molecule;
+}
+
+/**
+ * @return the Molecule object
+ */
+Molecule & DOCIHamiltonian::getMolecule()
 {
    return *molecule;
 }

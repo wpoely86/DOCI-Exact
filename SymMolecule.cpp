@@ -3,16 +3,16 @@
 
 #include "SymMolecule.h"
 // From CIFLOW 
-#include <CIFLow/Hamiltonian.h>
+#include "Hamiltonian.h"
 
 doci::Sym_Molecule::Sym_Molecule(std::string filename) : ham(nullptr)
 {
-   ham.reset(new Hamiltonian(filename));
+   ham.reset(new CheMPS2::Hamiltonian(CheMPS2::Hamiltonian::CreateFromH5(filename)));
 }
 
 doci::Sym_Molecule::Sym_Molecule(const Sym_Molecule &orig)
 {
-   ham.reset(new Hamiltonian(*orig.ham));
+   ham.reset(new CheMPS2::Hamiltonian(*orig.ham));
 }
 
 // cannot do this in header as Hamiltonian is an incomplete type:
@@ -22,6 +22,11 @@ doci::Sym_Molecule::~Sym_Molecule() = default;
 doci::Sym_Molecule* doci::Sym_Molecule::clone() const
 {
    return new doci::Sym_Molecule(*this);
+}
+
+doci::Sym_Molecule* doci::Sym_Molecule::move()
+{
+   return new doci::Sym_Molecule(std::move(*this));
 }
 
 double doci::Sym_Molecule::getT(int a, int b) const
@@ -36,7 +41,8 @@ double doci::Sym_Molecule::getV(int a, int b, int c, int d) const
 
 double doci::Sym_Molecule::HF_Energy() const
 {
-   return ham->get_hf_energy();
+//   return ham->get_hf_energy();
+   return 0;
 }
 
 double doci::Sym_Molecule::get_nucl_rep() const
@@ -51,14 +57,19 @@ unsigned int doci::Sym_Molecule::get_n_sp() const
 
 unsigned int doci::Sym_Molecule::get_n_electrons() const
 {
-   return ham->getnup() + ham->getndown();
+   return ham->getNe();
 }
 
 /**
  * Access operator to the actual Hamiltonian object
  * @return the Hamiltonian object
  */
-Hamiltonian& doci::Sym_Molecule::getHamObject() const
+CheMPS2::Hamiltonian& doci::Sym_Molecule::getHamObject() const
+{
+   return *ham;
+}
+
+CheMPS2::Hamiltonian& doci::Sym_Molecule::getHamObject()
 {
    return *ham;
 }

@@ -1,5 +1,5 @@
-#ifndef HAMILTONIAN_H
-#define HAMILTONIAN_H
+#ifndef DOCI_HAMILTONIAN_H
+#define DOCI_HAMILTONIAN_H
 
 #include <vector>
 #include <memory>
@@ -22,6 +22,8 @@ class DOCIHamiltonian
 
       DOCIHamiltonian(const Molecule &);
 
+      DOCIHamiltonian(Molecule &&mol);
+
       DOCIHamiltonian(const DOCIHamiltonian &);
 
       DOCIHamiltonian(DOCIHamiltonian &&) = default;
@@ -33,6 +35,8 @@ class DOCIHamiltonian
       DOCIHamiltonian& operator=(DOCIHamiltonian &&) = default;
 
       Molecule const & getMolecule() const;
+
+      Molecule & getMolecule();
 
       Permutation const & getPermutation() const;
 
@@ -64,6 +68,6 @@ class DOCIHamiltonian
 
 }
 
-#endif /* HAMILTONIAN_H */
+#endif /* DOCI_HAMILTONIAN_H */
 
 /* vim: set ts=3 sw=3 expandtab :*/
