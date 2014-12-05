@@ -14,19 +14,22 @@ OBJ=$(CPPSRC:.cpp=.o)
 EXE=doci
 
 # The compilers
-CC = clang
-CXX = g++
+ifeq ($(origin CC), default)
+    CC = clang
+endif
 
-CIFLOW=/home/ward/Documents/phd/CIFlowImproved
+ifeq ($(origin CXX), default)
+    CXX = g++
+endif
 
 # compile and link flags
-CFLAGS=-Iinclude -g -Wall -O2 -march=native -std=c++11 -fopenmp -Wno-sign-compare # -DNDEBUG
+CFLAGS=-Iinclude -Iextern/include -g -Wall -O2 -march=native -std=c++11 -fopenmp -Wno-sign-compare # -DNDEBUG
 CPPFLAGS=$(CFLAGS)
 LDFLAGS=-g -O2 -Wall -march=native -fopenmp
 
 # location of headers and libraries
 INCLUDE=
-LIBS=-lblas -llapack -larpack -lhdf5 -L$(CIFLOW)/lib -lward
+LIBS=-lblas -llapack -larpack -lhdf5 -Lextern -lsimanneal
 #LIBS=-lmkl_intel_lp64 -lmkl_sequential -lmkl_core -liomp5 -lpthread -lhdf5 -larpack
 
 
