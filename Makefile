@@ -7,6 +7,7 @@ CPPSRC= helpers.cpp\
 	SparseMatrix_CRS.cpp\
 	DM2.cpp\
 	SymMolecule.cpp\
+	SimulatedAnnealing.cpp\
 
 OBJ=$(CPPSRC:.cpp=.o)
 
