@@ -44,6 +44,8 @@ class doci::SimulatedAnnealing
 
       doci::Sym_Molecule& getMol() const;
 
+      simanneal::OrbitalTransform& getOrbitaltf() const;
+
    private:
 
       //! Holds the current hamiltonian

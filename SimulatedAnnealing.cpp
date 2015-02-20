@@ -145,6 +145,10 @@ void doci::SimulatedAnnealing::optimize()
    auto &ham_data = mol->getHamObject();
 
    unsigned int unaccepted = 0;
+
+   energy = calc_new_energy();
+   std::cout << "Starting energy = " << get_energy() << std::endl;
+
    double lowest_energy = energy;
    cur_temp = start_temp;
 
@@ -230,6 +234,11 @@ void doci::SimulatedAnnealing::optimize()
 doci::DOCIHamiltonian& doci::SimulatedAnnealing::getHam() const
 {
    return *ham;
+}
+
+simanneal::OrbitalTransform& doci::SimulatedAnnealing::getOrbitaltf() const
+{
+   return *orbtrans;
 }
 
 /* vim: set ts=3 sw=3 expandtab :*/
