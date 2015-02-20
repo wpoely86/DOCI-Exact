@@ -68,6 +68,9 @@ namespace CheMPS2{
          void read(const std::string name);
 
          void read2(const std::string name);
+
+         //! set everything to zero
+         void reset();
       
       private:
       

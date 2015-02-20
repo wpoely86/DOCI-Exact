@@ -81,6 +81,28 @@ CheMPS2::Hamiltonian::Hamiltonian(const Hamiltonian &orig)
     Vmat.reset(new FourIndex(*orig.Vmat));
 }
 
+CheMPS2::Hamiltonian& CheMPS2::Hamiltonian::operator=(const CheMPS2::Hamiltonian &orig)
+{
+    L = orig.L;
+    Ne = orig.Ne;
+    SymmInfo = orig.SymmInfo;
+    Econst = orig.Econst;
+
+    orb2irrep.reset(new int[L]);
+    orb2indexSy.reset(new int[L]);
+    int nIrreps = SymmInfo.getNumberOfIrreps();
+    irrep2num_orb.reset(new int[nIrreps]);
+
+    memcpy(orb2irrep.get(), orig.orb2irrep.get(), sizeof(int)*L);
+    memcpy(orb2indexSy.get(), orig.orb2indexSy.get(), sizeof(int)*L);
+    memcpy(irrep2num_orb.get(), orig.irrep2num_orb.get(), sizeof(int)*nIrreps);
+
+    Tmat.reset(new TwoIndex(*orig.Tmat));
+    Vmat.reset(new FourIndex(*orig.Vmat));
+
+    return *this;
+}
+
 CheMPS2::Hamiltonian::Hamiltonian(const string file_psi4text){
 
    CreateAndFillFromPsi4dump( file_psi4text );
@@ -642,4 +664,10 @@ CheMPS2::Hamiltonian CheMPS2::Hamiltonian::CreateFromH5(const string filename)
     my_obj.read2(filename);
 
     return my_obj;
+}
+
+void CheMPS2::Hamiltonian::reset()
+{
+    Tmat->reset();
+    Vmat->reset();
 }

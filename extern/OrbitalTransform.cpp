@@ -19,6 +19,7 @@
 #include <algorithm>
 #include <iostream>
 #include <cassert>
+#include <cstring>
 
 #include "OrbitalTransform.h"
 #include "Hamiltonian.h" 
@@ -34,7 +35,6 @@ using namespace simanneal;
 OrbitalTransform::OrbitalTransform(const Hamiltonian& HamIn):
     index(HamIn)
 {
-    OptIndex index(HamIn);
     numberOfIrreps = index.getNirreps();
     int L = HamIn.getL();
     SymmInfo.setGroup(HamIn.getNGroup());
@@ -262,6 +262,166 @@ double OrbitalTransform::get_norb(int irrep) const
 void OrbitalTransform::update_unitary(double * change)
 {
     _unitary->updateUnitary(mem1.get(),mem2.get(),change,1);//First 1, sets multiply.
+}
+
+/**
+ * Update the unitary matrix with exp(X). In X you should store
+ * an anti-symmetric real matrix.
+ * @param X the anti-symmetric real matrix
+ * @param replace replace or multiply? By default do exp(X)*U
+ */
+void OrbitalTransform::update_unitary(const UnitaryMatrix &X, bool replace)
+{
+    _unitary->updateUnitary(mem1.get(),mem2.get(),X,replace);
+//    _unitary->CheckDeviationFromUnitary(mem1.get());
+}
+
+/**
+ * Update ham_rot in place with a jacobi rotation between orbital k and l over
+ * an angle of theta. k and l should be in the same irrep.
+ * @param k the first orbital
+ * @param l the second orbital
+ * @param theta the angle to rotation over
+ * @return an rotated Hamiltonian
+ */
+void OrbitalTransform::DoJacobiRotation(CheMPS2::Hamiltonian &ham_rot, int k, int l, double theta)
+{
+    assert(ham_rot.getOrbitalIrrep(k) == ham_rot.getOrbitalIrrep(l));
+
+    const int irrep = ham_rot.getOrbitalIrrep(k);
+    const int linsize = index.getNORB(irrep);
+    const int shift = index.getNstart(irrep);
+    // the relative index in the irrep
+    const int k2 = k - shift;
+    const int l2 = l - shift;
+
+    const double cos = std::cos(theta);
+    const double sin = std::sin(theta);
+
+    // the one particle integrals
+
+    // first copy element that we are gonna overwrite
+    const double tmpkk = ham_rot.getTmat(k,k);
+    const double tmpll = ham_rot.getTmat(l,l);
+    const double tmpkl = ham_rot.getTmat(k,l);
+
+    double tmp;
+    tmp = cos*cos*tmpkk+sin*sin*tmpll-2*cos*sin*tmpkl;
+    ham_rot.setTmat(k,k,tmp);
+
+    tmp = cos*cos*tmpll+sin*sin*tmpkk+2*cos*sin*tmpkl;
+    ham_rot.setTmat(l,l,tmp);
+
+    tmp = tmpkl*(cos*cos-sin*sin)+cos*sin*(tmpkk-tmpll);
+    ham_rot.setTmat(k,l,tmp);
+
+    for(int a=shift;a<linsize+shift;a++)
+    {
+        if(a == k || a == l)
+            continue;
+
+        const double tmpk = ham_rot.getTmat(k,a); 
+        const double tmpl = ham_rot.getTmat(l,a); 
+
+        tmp = cos * tmpk - sin * tmpl;
+        ham_rot.setTmat(a,k,tmp);
+
+        tmp = cos * tmpl + sin * tmpk;
+        ham_rot.setTmat(a,l,tmp);
+    }
+
+
+    // the two particle elements
+    // this is code from Sebastian (CheMPS2) adapted to 
+    // Jacobi rotations in one irrep
+    // Two-body terms --> use eightfold permutation symmetry in the irreps :-)
+    for (int irrep1 = 0; irrep1<numberOfIrreps; irrep1++)
+        for (int irrep2 = irrep1; irrep2<numberOfIrreps; irrep2++)
+        {
+            const int productSymm = SymmInfo.directProd(irrep1, irrep2);
+            for (int irrep3 = irrep1; irrep3<numberOfIrreps; irrep3++)
+            {
+                const int irrep4 = SymmInfo.directProd(productSymm, irrep3);
+                // Generated all possible combinations of allowed irreps
+                if(irrep4>=irrep2 && (irrep4==irrep || irrep3==irrep || irrep2==irrep || irrep1==irrep))
+                {
+                    const int linsize1 = index.getNORB(irrep1);
+                    const int linsize2 = index.getNORB(irrep2);
+                    const int linsize3 = index.getNORB(irrep3);
+                    const int linsize4 = index.getNORB(irrep4);
+
+                    if ((linsize1>0) && (linsize2>0) && (linsize3>0) && (linsize4>0))
+                    {
+                        for (int cnt1=0; cnt1<linsize1; cnt1++)
+                            for (int cnt2=0; cnt2<linsize2; cnt2++)
+                                for (int cnt3=0; cnt3<linsize3; cnt3++)
+                                    for (int cnt4=0; cnt4<linsize4; cnt4++)
+                                        mem1[cnt1 + linsize1 * ( cnt2 + linsize2 * (cnt3 + linsize3 * cnt4) ) ]
+                                            = ham_rot.getVmat(index.getNstart(irrep1) + cnt1,index.getNstart(irrep2) + cnt2, index.getNstart(irrep3) + cnt3, index.getNstart(irrep4) + cnt4 );
+
+                        int rightdim = linsize2 * linsize3 * linsize4;
+                        // (ijkl) -> (ajkl)
+                        if(irrep1 == irrep)
+                            for(int d=0;d<rightdim;d++)
+                            {
+                                const double tmpk = mem1[d*linsize1+k2];
+                                const double tmpl = mem1[d*linsize1+l2];
+
+                                mem1[d*linsize1+k2] = cos*tmpk-sin*tmpl;
+                                mem1[d*linsize1+l2] = cos*tmpl+sin*tmpk;
+                            }
+
+                        int leftdim = linsize1 * linsize2 * linsize3;
+                        // (ajkl) -> (ajkd)
+                        if(irrep4 == irrep)
+                            for(int d=0;d<leftdim;d++)
+                            {
+                                const double tmpk = mem1[k2*leftdim+d];
+                                const double tmpl = mem1[l2*leftdim+d];
+
+                                mem1[k2*leftdim+d] = cos*tmpk-sin*tmpl;
+                                mem1[l2*leftdim+d] = cos*tmpl+sin*tmpk;
+                            }
+
+                        int jump = linsize1 * linsize2 * linsize3;
+                        leftdim = linsize1 * linsize2;
+                        // (ajkd) -> (ajcd)
+                        if(irrep3 == irrep)
+                            for (int strideidx=0;strideidx<linsize4;strideidx++)
+                                for(int d=0;d<leftdim;d++)
+                                {
+                                    const double tmpk = mem1[k2*leftdim+d+jump*strideidx];
+                                    const double tmpl = mem1[l2*leftdim+d+jump*strideidx];
+
+                                    mem1[k2*leftdim+d+jump*strideidx] = cos*tmpk-sin*tmpl;
+                                    mem1[l2*leftdim+d+jump*strideidx] = cos*tmpl+sin*tmpk;
+                                }
+
+
+                        jump = linsize1 * linsize2;
+                        rightdim = linsize3 * linsize4;
+                        // (ajcd) -> (abcd)
+                        if(irrep2 == irrep)
+                            for (int strideidx=0;strideidx<rightdim;strideidx++)
+                                for(int d=0;d<linsize1;d++)
+                                {
+                                    const double tmpk = mem1[k2*linsize1+d+jump*strideidx];
+                                    const double tmpl = mem1[l2*linsize1+d+jump*strideidx];
+
+                                    mem1[k2*linsize1+d+jump*strideidx] = cos*tmpk-sin*tmpl;
+                                    mem1[l2*linsize1+d+jump*strideidx] = cos*tmpl+sin*tmpk;
+                                }
+
+                        for (int cnt1=0; cnt1<linsize1; cnt1++)
+                            for (int cnt2=0; cnt2<linsize2; cnt2++)
+                                for (int cnt3=0; cnt3<linsize3; cnt3++)
+                                    for (int cnt4=0; cnt4<linsize4; cnt4++)
+                                        ham_rot.setVmat(index.getNstart(irrep1) + cnt1,index.getNstart(irrep2) + cnt2, index.getNstart(irrep3) + cnt3,index.getNstart(irrep4) + cnt4, mem1[cnt1 + linsize1 * ( cnt2 + linsize2 * (cnt3 + linsize3 * cnt4) ) ] );
+
+                    } //end if the problem has orbitals from all 4 selected irreps
+                } // end if irrep 4 >= irrep2
+            }// end run irrep3
+        } // end run irrep2
 }
 
 /* vim: set ts=4 sw=4 expandtab :*/

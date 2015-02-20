@@ -80,6 +80,10 @@ namespace CheMPS2{
 
          Hamiltonian(Hamiltonian &&) = default;
 
+         Hamiltonian& operator=(const Hamiltonian &);
+
+         Hamiltonian& operator=(Hamiltonian &&) = default;
+
          //! Destructor
          virtual ~Hamiltonian() = default;
          
@@ -164,6 +168,9 @@ namespace CheMPS2{
          void debugcheck() const;
 
          static Hamiltonian CreateFromH5(const string filename);
+
+         //! set everything to zero
+         void reset();
       
       private:
       

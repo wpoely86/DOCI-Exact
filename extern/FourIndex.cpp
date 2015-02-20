@@ -556,5 +556,9 @@ void CheMPS2::FourIndex::read2(const std::string name)
     H5Fclose(file_id);
 
     std::cout << "FourIndex::read : everything loaded!" << std::endl;
+}
 
+void CheMPS2::FourIndex::reset()
+{
+   memset(theElements, 0, sizeof(double)*arrayLength);
 }

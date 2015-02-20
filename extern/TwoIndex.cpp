@@ -327,3 +327,10 @@ void CheMPS2::TwoIndex::read2(const std::string name)
 
     H5Fclose(file_id);
 }
+
+void CheMPS2::TwoIndex::reset()
+{
+   for (int cnt=0; cnt<SymmInfo.getNumberOfIrreps(); cnt++)
+      if (Isizes[cnt]>0)
+          memset(storage[cnt], 0, sizeof(double)*(Isizes[cnt]*(Isizes[cnt]+1)/2));
+}

@@ -33,7 +33,7 @@ class UnitaryMatrix
       
         //! Constructor
         /** \param _hamindexIn */
-        UnitaryMatrix(OptIndex& index);
+        UnitaryMatrix(const OptIndex&);
 
      	//!Copy constructor
         UnitaryMatrix(const UnitaryMatrix & unit);
@@ -106,6 +106,12 @@ class UnitaryMatrix
         void sendreceive(int);
 
         int get_Nirrep() const;
+
+        void updateUnitary(double *, double *, const UnitaryMatrix &, bool);
+
+        void fill_random();
+
+        void make_skew_symmetric();
 
     private:
       

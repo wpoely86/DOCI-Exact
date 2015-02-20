@@ -24,7 +24,7 @@ class OrbitalTransform
         void buildOneBodyMatrixElements();
         void set_unitary(UnitaryMatrix& unit);
         CheMPS2::Hamiltonian& get_ham() { return (*_hamorig); }
-        CheMPS2::Hamiltonian& get_ham() const { return (*_hamorig); }
+        const CheMPS2::Hamiltonian& get_ham() const { return (*_hamorig); }
 
         double TmatRotated(const int index1, const int index2) const;
         double get_norb(int irrep) const;
@@ -35,6 +35,10 @@ class OrbitalTransform
         UnitaryMatrix& get_unitary() { return (*_unitary); }
         UnitaryMatrix& get_unitary() const { return (*_unitary); }
 
+        void DoJacobiRotation(CheMPS2::Hamiltonian &, int k, int l, double theta);
+
+        void update_unitary(const UnitaryMatrix &, bool replace=false);
+
     private:
         void rotate_old_to_new(std::unique_ptr<double []> * matrix);
 
@@ -42,6 +46,8 @@ class OrbitalTransform
         std::unique_ptr<CheMPS2::Hamiltonian> _hamorig;
         //! The rotation to perfrom on _hamorig to get the current hamiltonian
         std::unique_ptr<simanneal::UnitaryMatrix>  _unitary;
+
+        std::unique_ptr<CheMPS2::Hamiltonian> ham_rot;
 
         OptIndex index;
         CheMPS2::Irreps SymmInfo;

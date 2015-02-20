@@ -24,7 +24,8 @@
 #include <sstream>
 #include <algorithm>
 #include <cstring>
-//#include <mpi.h>
+#include <random>
+#include <mpi.h>
 
 #include "MyHDF5.h"
 #include "Lapack.h"
@@ -39,19 +40,23 @@ using std::endl;
 using CheMPS2::Orbopt_debugPrint;
 using namespace simanneal;
 
-UnitaryMatrix::UnitaryMatrix(OptIndex& index)
+UnitaryMatrix::UnitaryMatrix(const OptIndex& index_in)
 {
-    _index.reset(new OptIndex(index));
+    _index.reset(new OptIndex(index_in));
 
     //Allocate the unitary
     unitary.resize(_index->getNirreps());
     x_linearlength = 0;
+
     for (int irrep=0; irrep<_index->getNirreps(); irrep++)
     {
         const int linsize = _index->getNORB(irrep);
         const int size = linsize * linsize;
+
         x_linearlength += size;
+
         unitary[irrep].reset(new double[size]);
+
         memset(unitary[irrep].get(), 0, sizeof(double)*size);
         for (int cnt=0; cnt<linsize; cnt++)
             unitary[irrep][cnt*(1+linsize)] = 1.0;
@@ -70,8 +75,7 @@ UnitaryMatrix::UnitaryMatrix(const UnitaryMatrix & unit)
         const int linsize = _index->getNORB(irrep);
         const int size = linsize * linsize;
         unitary[irrep].reset(new double[size]);
-        for (int index=0; index<size; index++)
-            unitary[irrep][index] = unit.getBlock(irrep)[index];
+        std::memcpy(unitary[irrep].get(), unit.unitary[irrep].get(), size*sizeof(double));
     }
 }
 
@@ -93,8 +97,7 @@ UnitaryMatrix& UnitaryMatrix::operator=(const UnitaryMatrix &unit)
         const int linsize = _index->getNORB(irrep);
         const int size = linsize * linsize;
         unitary[irrep].reset(new double[size]);
-        for (int index=0; index<size; index++)
-            unitary[irrep][index] = unit.getBlock(irrep)[index];
+        std::memcpy(unitary[irrep].get(), unit.unitary[irrep].get(), size*sizeof(double));
     }
 
     return *this;
@@ -113,20 +116,18 @@ void UnitaryMatrix::jacobi_rotation(int irrep , int i , int j , double angle)
     //Simple implementation of jacobi rotation. 
     i -= _index->getNstart(irrep);
     j -= _index->getNstart(irrep);
-    int linsize = _index->getNORB(irrep);
-    double  work[2*linsize];
+    const int linsize = _index->getNORB(irrep);
 
-    //cout << i << j<< linsize << cos(angle) << sin(angle);
-    for(int l = 0 ; l < linsize ; l++)
-    {
-        work[l] = unitary[irrep][l+i*linsize]*cos(angle) + unitary[irrep][l+j*linsize] * sin(angle);
-        work[l+linsize] = unitary[irrep][l+j*linsize]*cos(angle) + unitary[irrep][l+i*linsize] * sin(angle)*-1.;
-    }
+    const double cos = std::cos(angle);
+    const double sin = std::sin(angle);
 
-    for(int l = 0 ; l < _index->getNORB(irrep) ; l++)
+    for(int l=0;l<linsize;l++)
     {
-        unitary[irrep][l+i*linsize] = work[l];
-        unitary[irrep][l+j*linsize] = work[l+linsize];
+        const double tmpi = unitary[irrep][i+l*linsize];
+        const double tmpj = unitary[irrep][j+l*linsize];
+
+        unitary[irrep][i+l*linsize] = cos*tmpi-sin*tmpj;
+        unitary[irrep][j+l*linsize] = cos*tmpj+sin*tmpi;
     }
 }
 
@@ -145,6 +146,91 @@ void UnitaryMatrix::reset_unitary()
 unsigned int UnitaryMatrix::getNumVariablesX() const{ return x_linearlength; }
 
 double * UnitaryMatrix::getBlock(const int irrep) const { return unitary[irrep].get(); }
+
+
+/**
+ * Calculate the unitary matrix: exp(X). Depending on replace, do exp(X)*U or replace by exp(X)
+ * @param temp1 temporarily storage
+ * @param temp2 temporarily storage
+ * @param X the X matrix
+ * @param replace if true replace the current unitary matrix with exp(X), else do exp(X)*U
+ */
+void UnitaryMatrix::updateUnitary(double *temp1, double *temp2, const UnitaryMatrix &X, bool replace)
+{
+    for (int irrep=0;irrep<_index->getNirreps();irrep++)
+    {
+        auto linsize = _index->getNORB(irrep);
+        const auto size = linsize * linsize;
+        double *xblock = X.getBlock(irrep);
+
+        if(linsize==0)
+            continue;
+        else if(linsize==1)
+            unitary[irrep][0] = std::exp(xblock[0]);
+        else // linsize > 1
+        {
+            char notrans = 'N';
+            char trans = 'T';
+            double alpha = 1;
+            double beta = 0;
+
+            double *B = temp1; // linsize*linsize
+
+            // B=X*X
+            dgemm_(&notrans,&notrans,&linsize,&linsize,&linsize,&alpha,xblock,&linsize,xblock,&linsize,&beta,B,&linsize); 
+
+            char jobz = 'V';
+            char uplo = 'U';
+            int info = 0; // avoid valgrind errors
+            int lwork = 3*linsize - 1;
+            double *eigB = &temp1[size]; // linsize
+            double *work = temp2; // lwork
+
+            // B = V*diag(eigB)*V^T
+            dsyev_(&jobz,&uplo,&linsize,B,&linsize,eigB,work,&lwork,&info);
+
+            if(info)
+                std::cerr << "dsyev in updateUnitary failed. info = " << info << std::endl;
+
+            double *expC = temp2; // linsize*linsize
+            double *tmp = &temp2[size]; // linsize*linsize
+            memset(expC, 0, sizeof(double)*size);
+            for(int i=0;i<linsize/2;i++)
+            {
+                const double lambda = std::sqrt(-1*eigB[i*2]);
+                const double cos = std::cos(lambda);
+                const double sin = std::sin(lambda);
+                const int idx = 2*i;
+                expC[idx*(linsize+1)] = cos;
+                expC[(idx+1)*(linsize+1)] = cos;
+                expC[idx+(idx+1)*linsize] = sin;
+                expC[idx+1+idx*linsize] = -sin;
+            }
+
+            // if odd dimension
+            if(linsize%2==1)
+                expC[size-1] = 1;
+
+            // exp(X) = V*expC*V^T
+            // First tmp = expC*V^T
+            dgemm_(&notrans,&trans,&linsize,&linsize,&linsize,&alpha,expC,&linsize,B,&linsize,&beta,tmp,&linsize); 
+            // Second unitary[irrep] = V*tmp
+            double *res;
+            if(replace)
+                res = unitary[irrep].get();
+            else
+                res = expC;
+
+            dgemm_(&notrans,&notrans,&linsize,&linsize,&linsize,&alpha,B,&linsize,tmp,&linsize,&beta,res,&linsize); 
+
+            if(!replace)
+            {
+                dgemm_(&notrans,&notrans,&linsize,&linsize,&linsize,&alpha,res,&linsize,unitary[irrep].get(),&linsize,&beta,B,&linsize); 
+                std::memcpy(unitary[irrep].get(), B, sizeof(double)*size);
+            }
+        }
+    }
+}
 
 void UnitaryMatrix::updateUnitary(double * temp1, double * temp2, double * vector, const bool multiply)
 {
@@ -286,6 +372,7 @@ void UnitaryMatrix::build_skew_symm_x(const int irrep, double * result , const d
 
 void UnitaryMatrix::rotate_active_space_vectors(double * eigenvecs, double * work)
 {
+    assert(0 && "Not manually checked everything here!");
    int passed = 0;
    int nOrbDMRG = _index->getL();
    for (int irrep=0; irrep<_index->getNirreps(); irrep++){
@@ -343,15 +430,17 @@ void UnitaryMatrix::CheckDeviationFromUnitary(double * work) const
         {
             dgemm_(&tran,&notr,&linsize,&linsize,&linsize,&alpha,unitary[irrep].get(),&linsize,unitary[irrep].get(),&linsize,&beta,work,&linsize);
 
+            for(int i=0;i<linsize;i++)
+                work[(linsize+1)*i] -= 1;
+
             int inc = 1;
             int n = linsize*linsize;
             double norm = ddot_(&n, work, &inc, work, &inc);
 
-            // we don't have to calculate the sqrt (expensive!) to see if we're still OK.
             norm = sqrt(norm);
 
             cout << "Two-norm of unitary[" << irrep << "]^(dagger) * unitary[" << irrep << "] - I = " << norm << endl;
-            if((norm-1) > 1e-13)
+            if( fabs(norm) > 1e-13)
             {
                 cerr << "WARNING: we reseted the unitary because we lost unitarity." << endl;
                 exit(EXIT_FAILURE);
@@ -395,13 +484,18 @@ void UnitaryMatrix::loadU(string unitname)
        
    for (int irrep=0; irrep<_index->getNirreps(); irrep++)
    {
-      std::stringstream irrepname;
-      irrepname << "irrep_" << irrep;
+       int norb = _index->getNORB(irrep); 
 
-      hid_t dataset_id = H5Dopen(group_id, irrepname.str().c_str(), H5P_DEFAULT);
-      H5Dread(dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, unitary[irrep].get());
-         
-      H5Dclose(dataset_id);
+       if(norb > 0)
+       {
+           std::stringstream irrepname;
+           irrepname << "irrep_" << irrep;
+
+           hid_t dataset_id = H5Dopen(group_id, irrepname.str().c_str(), H5P_DEFAULT);
+           H5Dread(dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, unitary[irrep].get());
+
+           H5Dclose(dataset_id);
+       }
    }
 
    H5Gclose(group_id);
@@ -410,10 +504,11 @@ void UnitaryMatrix::loadU(string unitname)
 
 void UnitaryMatrix::deleteStoredUnitary(std::string name) const
 {
-   std::stringstream temp;
-   temp << "rm " << name;
-   int info = system(temp.str().c_str());
-   cout << "Info on CASSCF::Unitary rm call to system: " << info << endl;
+    assert(0 && "Don't use this!");
+    std::stringstream temp;
+    temp << "rm " << name;
+    int info = system(temp.str().c_str());
+    cout << "Info on CASSCF::Unitary rm call to system: " << info << endl;
 }
 
 void UnitaryMatrix::print_unitary() const
@@ -452,6 +547,39 @@ void UnitaryMatrix::sendreceive(int orig)
 int UnitaryMatrix::get_Nirrep() const
 {
     return _index->getNirreps();
+}
+
+void UnitaryMatrix::fill_random()
+{
+    std::random_device rd;
+    auto mt = std::mt19937_64(rd());
+    std::uniform_real_distribution<double> dist_angles(-1000, 1000);
+    //std::uniform_real_distribution<double> dist_angles(-M_PI, M_PI);
+
+    srand(time(0));
+
+    for (int irrep=0; irrep<_index->getNirreps(); irrep++)
+    {
+        const int linsize = _index->getNORB(irrep);
+        const int size = linsize * linsize;
+        for(int j=0;j<size;j++)
+            unitary[irrep][j] = dist_angles(mt);
+//            unitary[irrep][j] = (double) rand()/RAND_MAX;
+    }
+}
+
+void UnitaryMatrix::make_skew_symmetric()
+{
+    for (int irrep=0; irrep<_index->getNirreps(); irrep++)
+    {
+        const int linsize = _index->getNORB(irrep);
+        for(int i=0;i<linsize;i++)
+        {
+            unitary[irrep][i+i*linsize] = 0;
+            for(int j=i+1;j<linsize;j++)
+                unitary[irrep][j+i*linsize] = -1 * unitary[irrep][i+j*linsize];
+        }
+    }
 }
 
 /* vim: set ts=4 sw=4 expandtab :*/
