@@ -103,17 +103,20 @@ int main(int argc, char **argv)
 
     cout << "Reading: " << integralsfile << endl;
 
-    if(!unitary.empty() && !optimize)
+    if(!optimize)
     {
-        cout << "Reading unitary " << unitary << endl;
-
         Sym_Molecule mol(integralsfile);
         auto& ham_ints = mol.getHamObject();
 
-        simanneal::OrbitalTransform orbtrans(ham_ints);
+        if(!unitary.empty())
+        {
+            cout << "Reading unitary " << unitary << endl;
 
-        orbtrans.get_unitary().loadU(unitary);
-        orbtrans.fillHamCI(ham_ints);
+            simanneal::OrbitalTransform orbtrans(ham_ints);
+
+            orbtrans.get_unitary().loadU(unitary);
+            orbtrans.fillHamCI(ham_ints);
+        }
 
         DOCIHamiltonian ham(mol);
 
