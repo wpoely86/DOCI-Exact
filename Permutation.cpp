@@ -86,7 +86,7 @@ unsigned long long Permutation::CalcCombinations(unsigned int L, unsigned int N)
    if(L == N)
       return 1;
    if(1 == N)
-      return N;
+      return L;
 
    unsigned long long result = 1;
 
