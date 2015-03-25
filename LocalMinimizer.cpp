@@ -117,6 +117,7 @@ void doci::LocalMinimizer::calc_energy()
    auto eig = method->Diagonalize();
    energy = eig.first;
    end = std::chrono::high_resolution_clock::now();
+   std::cout << "E = " << eig.first + method->getMolecule().get_nucl_rep() << std::endl;
 
    std::cout << "Diagonalization took: " << std::chrono::duration_cast<std::chrono::duration<double,std::ratio<1>>>(end-start).count() << " s" << std::endl;
 
@@ -148,6 +149,7 @@ double doci::LocalMinimizer::calc_new_energy()
    start = std::chrono::high_resolution_clock::now();
    auto eig = method->Diagonalize();
    end = std::chrono::high_resolution_clock::now();
+   std::cout << "E = " << eig.first + mol->get_nucl_rep() << std::endl;
 
    std::cout << "Diagonalization took: " << std::chrono::duration_cast<std::chrono::duration<double,std::ratio<1>>>(end-start).count() << " s" << std::endl;
 
@@ -177,6 +179,7 @@ double doci::LocalMinimizer::calc_new_energy(const doci::Sym_Molecule &new_ham)
    start = std::chrono::high_resolution_clock::now();
    auto eig = method->Diagonalize();
    end = std::chrono::high_resolution_clock::now();
+   std::cout << "E = " << eig.first + mol->get_nucl_rep() << std::endl;
 
    std::cout << "Diagonalization took: " << std::chrono::duration_cast<std::chrono::duration<double,std::ratio<1>>>(end-start).count() << " s" << std::endl;
 
