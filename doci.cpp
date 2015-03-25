@@ -134,6 +134,32 @@ int main(int argc, char **argv)
 
         cout << "E = " << eig2.first + mol.get_nucl_rep() << endl;
 
+        DM2 rdm(mol);
+        auto perm = ham.getPermutation();
+        start = std::chrono::high_resolution_clock::now();
+        rdm.Build(perm, eig2.second);
+        end = std::chrono::high_resolution_clock::now();
+
+        cout << "Building 2DM took: " << std::chrono::duration_cast<std::chrono::duration<double,std::ratio<1>>>(end-start).count() << " s" << endl;
+
+        DM2 rdm_ham(mol);
+
+        rdm_ham.BuildHamiltonian(mol);
+
+        cout << "DM2 Energy = " << rdm.Dot(rdm_ham) + mol.get_nucl_rep() << endl;
+        cout << "DM2 Trace = " << rdm.Trace() << endl;
+
+        // make sure we have a save path, even if it's not specify already
+        // This will not overwrite an already set SAVE_H5_PATH
+        setenv("SAVE_H5_PATH", "./", 0);
+
+        std::string h5_name = getenv("SAVE_H5_PATH");
+        h5_name += "/rdm.h5";
+
+        cout << "Writing 2DM to " << h5_name << endl;
+
+        rdm.WriteToFile(h5_name);
+
         return 0;
     }
 
@@ -188,64 +214,63 @@ int main(int argc, char **argv)
 
         rdm.WriteToFile(h5name);
     }
-    else
-    {
-        PSI_C1_Molecule mol(integralsfile);
 
-        cout << "RHF energy = " << mol.HF_Energy() + mol.get_nucl_rep() << endl;
-
-        DOCIHamiltonian ham(mol);
-
-        auto start = std::chrono::high_resolution_clock::now();
-        if(getenv("READ_SPARSE_H5_FILE"))
-        {
-            std::stringstream h5_name;
-            h5_name << getenv("READ_SPARSE_H5_FILE");
-            ham.ReadFromFile(h5_name.str());
-        }
-        else
-            ham.Build();
-        auto end = std::chrono::high_resolution_clock::now();
-
-        if(getenv("SAVE_SPARSE_H5_FILE"))
-        {
-            std::stringstream h5_name;
-            h5_name << getenv("SAVE_SPARSE_H5_FILE");
-            ham.SaveToFile(h5_name.str());
-        }
-
-        cout << "Building took: " << std::fixed << std::chrono::duration_cast<std::chrono::duration<double,std::ratio<1>>>(end-start).count() << " s" << endl;
-
-        //    auto eig = ham.DiagonalizeFull();
-        //
-        //    for(unsigned int i=0;i<eig.first.size();i++)
-        //        cout << i << "\t" << eig.first[i] + mol.get_nucl_rep() << endl;
-
-        start = std::chrono::high_resolution_clock::now();
-        auto eig2 = ham.Diagonalize();
-        end = std::chrono::high_resolution_clock::now();
-
-        cout << "Diagonalization took: " << std::chrono::duration_cast<std::chrono::duration<double,std::ratio<1>>>(end-start).count() << " s" << endl;
-
-        cout << "E = " << eig2.first + mol.get_nucl_rep() << endl;
-
-        DM2 rdm(mol);
-        auto perm = ham.getPermutation();
-        start = std::chrono::high_resolution_clock::now();
-        rdm.Build(perm, eig2.second);
-        end = std::chrono::high_resolution_clock::now();
-
-        cout << "Building 2DM took: " << std::chrono::duration_cast<std::chrono::duration<double,std::ratio<1>>>(end-start).count() << " s" << endl;
-
-        DM2 rdm_ham(mol);
-
-        rdm_ham.BuildHamiltonian(mol);
-
-        cout << "DM2 Energy = " << rdm.Dot(rdm_ham) + mol.get_nucl_rep() << endl;
-        cout << "DM2 Trace = " << rdm.Trace() << endl;
-
-        rdm.WriteToFile(h5name);
-    }
+/*     PSI_C1_Molecule mol(integralsfile);
+ * 
+ *     cout << "RHF energy = " << mol.HF_Energy() + mol.get_nucl_rep() << endl;
+ * 
+ *     DOCIHamiltonian ham(mol);
+ * 
+ *     auto start = std::chrono::high_resolution_clock::now();
+ *     if(getenv("READ_SPARSE_H5_FILE"))
+ *     {
+ *         std::stringstream h5_name;
+ *         h5_name << getenv("READ_SPARSE_H5_FILE");
+ *         ham.ReadFromFile(h5_name.str());
+ *     }
+ *     else
+ *         ham.Build();
+ *     auto end = std::chrono::high_resolution_clock::now();
+ * 
+ *     if(getenv("SAVE_SPARSE_H5_FILE"))
+ *     {
+ *         std::stringstream h5_name;
+ *         h5_name << getenv("SAVE_SPARSE_H5_FILE");
+ *         ham.SaveToFile(h5_name.str());
+ *     }
+ * 
+ *     cout << "Building took: " << std::fixed << std::chrono::duration_cast<std::chrono::duration<double,std::ratio<1>>>(end-start).count() << " s" << endl;
+ * 
+ *     //    auto eig = ham.DiagonalizeFull();
+ *     //
+ *     //    for(unsigned int i=0;i<eig.first.size();i++)
+ *     //        cout << i << "\t" << eig.first[i] + mol.get_nucl_rep() << endl;
+ * 
+ *     start = std::chrono::high_resolution_clock::now();
+ *     auto eig2 = ham.Diagonalize();
+ *     end = std::chrono::high_resolution_clock::now();
+ * 
+ *     cout << "Diagonalization took: " << std::chrono::duration_cast<std::chrono::duration<double,std::ratio<1>>>(end-start).count() << " s" << endl;
+ * 
+ *     cout << "E = " << eig2.first + mol.get_nucl_rep() << endl;
+ * 
+ *     DM2 rdm(mol);
+ *     auto perm = ham.getPermutation();
+ *     start = std::chrono::high_resolution_clock::now();
+ *     rdm.Build(perm, eig2.second);
+ *     end = std::chrono::high_resolution_clock::now();
+ * 
+ *     cout << "Building 2DM took: " << std::chrono::duration_cast<std::chrono::duration<double,std::ratio<1>>>(end-start).count() << " s" << endl;
+ * 
+ *     DM2 rdm_ham(mol);
+ * 
+ *     rdm_ham.BuildHamiltonian(mol);
+ * 
+ *     cout << "DM2 Energy = " << rdm.Dot(rdm_ham) + mol.get_nucl_rep() << endl;
+ *     cout << "DM2 Trace = " << rdm.Trace() << endl;
+ * 
+ *     rdm.WriteToFile(h5name);
+ */
 
     return 0;
 }
