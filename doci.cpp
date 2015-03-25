@@ -33,6 +33,7 @@ along with DOCI-Exact.  If not, see <http://www.gnu.org/licenses/>.
 #include "Hamiltonian.h"
 #include "OrbitalTransform.h"
 #include "UnitaryMatrix.h"
+#include "LocalMinimizer.h"
 
 /**
  * @mainpage
@@ -42,8 +43,8 @@ along with DOCI-Exact.  If not, see <http://www.gnu.org/licenses/>.
  * The Molecule object holds the atomic/molecular integrals to use.
  *
  * @author Ward Poelmans <wpoely86@gmail.com>
- * @version   0.4
- * @date      2014
+ * @version   0.6
+ * @date      2014-2015
  * @copyright GNU Public License v3
  */
 
@@ -58,21 +59,23 @@ int main(int argc, char **argv)
     std::string integralsfile = "mo-integrals.h5";
     std::string h5name = "rdm.h5";
     std::string unitary;
-    bool optimize = false;
+    bool simanneal = false;
+    bool jacobirots = false;
 
     struct option long_options[] =
     {
         {"integrals",  required_argument, 0, 'i'},
         {"output",  required_argument, 0, 'o'},
         {"unitary",  required_argument, 0, 'u'},
-        {"optimize",  no_argument, 0, 's'},
+        {"simulated-annealing",  no_argument, 0, 's'},
+        {"jacobi-rotations",  no_argument, 0, 'j'},
         {"help",  no_argument, 0, 'h'},
         {0, 0, 0, 0}
     };
 
     int i,j;
 
-    while( (j = getopt_long (argc, argv, "hi:o:su:", long_options, &i)) != -1)
+    while( (j = getopt_long (argc, argv, "hi:o:su:j", long_options, &i)) != -1)
         switch(j)
         {
             case 'h':
@@ -81,7 +84,8 @@ int main(int argc, char **argv)
                     "\n"
                     "    -i, --integrals=integrals-file  Set the input integrals file\n"
                     "    -o, --output=h5-file            Set the output filename for the RDM\n"
-                    "    -s, --optimize                  Use stimulated Annealing to find lowest energy\n"
+                    "    -s, --simulated-annealing       Use stimulated Annealing to find lowest energy\n"
+                    "    -j, --jacobi-rotations          Use Jacobi Rotations to find lowest energy\n"
                     "    -u, --unitary                   Use this unitary to calc energy\n"
                     "    -h, --help                      Display this help\n"
                     "\n";
@@ -94,16 +98,30 @@ int main(int argc, char **argv)
                 h5name = optarg;
                 break;
             case 's':
-                optimize = true;
+                simanneal = true;
+                break;
+            case 'j':
+                jacobirots = true;
                 break;
             case 'u':
                 unitary = optarg;
                 break;
         }
 
+    if(simanneal && jacobirots)
+    {
+        cout << "Cannot do both simulated annealing and jacobi rotations, you have to choose!" << endl;
+
+        return 2;
+    }
+
+    // make sure we have a save path, even if it's not specify already
+    // This will not overwrite an already set SAVE_H5_PATH
+    setenv("SAVE_H5_PATH", "./", 0);
+
     cout << "Reading: " << integralsfile << endl;
 
-    if(!optimize)
+    if(!simanneal && !jacobirots)
     {
         Sym_Molecule mol(integralsfile);
         auto& ham_ints = mol.getHamObject();
@@ -149,10 +167,6 @@ int main(int argc, char **argv)
         cout << "DM2 Energy = " << rdm.Dot(rdm_ham) + mol.get_nucl_rep() << endl;
         cout << "DM2 Trace = " << rdm.Trace() << endl;
 
-        // make sure we have a save path, even if it's not specify already
-        // This will not overwrite an already set SAVE_H5_PATH
-        setenv("SAVE_H5_PATH", "./", 0);
-
         std::string h5_name = getenv("SAVE_H5_PATH");
         h5_name += "/rdm.h5";
 
@@ -163,7 +177,7 @@ int main(int argc, char **argv)
         return 0;
     }
 
-    if(optimize)
+    if(simanneal)
     {
         Sym_Molecule mol(integralsfile);
 
@@ -211,6 +225,37 @@ int main(int argc, char **argv)
 
         cout << "DM2 Energy = " << rdm.Dot(rdm_ham) + mol.get_nucl_rep() << endl;
         cout << "DM2 Trace = " << rdm.Trace() << endl;
+
+        rdm.WriteToFile(h5name);
+    }
+
+    if(jacobirots)
+    {
+        Sym_Molecule mol(integralsfile);
+
+        LocalMinimizer opt(mol);
+
+        if(!unitary.empty())
+        {
+            cout << "Reading unitary " << unitary << endl;
+            opt.getOrbitalTf().get_unitary().loadU(unitary);
+        }
+
+        opt.Minimize();
+
+        cout << "E = " << opt.get_energy() << endl;
+
+        DM2 rdm_ham(opt.getHam());
+        rdm_ham.BuildHamiltonian(opt.getHam());
+        const DM2 &rdm = opt.get_DM2();
+
+        cout << "DM2 Energy = " << rdm.Dot(rdm_ham) + mol.get_nucl_rep() << endl;
+        cout << "DM2 Trace = " << rdm.Trace() << endl;
+
+        std::string h5_name = getenv("SAVE_H5_PATH");
+        h5_name += "/rdm.h5";
+
+        cout << "Writing 2DM to " << h5_name << endl;
 
         rdm.WriteToFile(h5name);
     }

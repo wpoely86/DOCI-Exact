@@ -8,6 +8,7 @@ CPPSRC= helpers.cpp\
 	DM2.cpp\
 	SymMolecule.cpp\
 	SimulatedAnnealing.cpp\
+	LocalMinimizer.cpp\
 
 OBJ=$(CPPSRC:.cpp=.o)
 
