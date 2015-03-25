@@ -62,6 +62,10 @@ class DM2
 
       double Trace() const;
 
+      std::pair<double,bool> find_min_angle(int k, int l, double start_angle, std::function<double(int,int)> &T, std::function<double(int,int,int,int)> &V) const;
+
+      double calc_rotate(int k, int l, double theta, std::function<double(int,int)> &T, std::function<double(int,int,int,int)> &V) const;
+
    private:
 
       void build_iter(Permutation& , std::vector<double> &, unsigned int , unsigned int , DM2 &);
