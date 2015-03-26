@@ -36,14 +36,13 @@ along with DOCI-Exact.  If not, see <http://www.gnu.org/licenses/>.
 #include "LocalMinimizer.h"
 
 /**
- * @mainpage
  * This is an exact DOCI solver by means of a lanczos solver. We build the
  * Hamiltonian and store it as a sparse matrix (in Column Compressed Format).
  * The Permutation object generates the next basis state on the fly.
  * The Molecule object holds the atomic/molecular integrals to use.
  *
  * @author Ward Poelmans <wpoely86@gmail.com>
- * @version   0.6
+ * @version   0.7
  * @date      2014-2015
  * @copyright GNU Public License v3
  */
@@ -61,6 +60,7 @@ int main(int argc, char **argv)
     std::string unitary;
     bool simanneal = false;
     bool jacobirots = false;
+    bool random = false;
 
     struct option long_options[] =
     {
@@ -69,13 +69,14 @@ int main(int argc, char **argv)
         {"unitary",  required_argument, 0, 'u'},
         {"simulated-annealing",  no_argument, 0, 's'},
         {"jacobi-rotations",  no_argument, 0, 'j'},
+        {"random",  no_argument, 0, 'r'},
         {"help",  no_argument, 0, 'h'},
         {0, 0, 0, 0}
     };
 
     int i,j;
 
-    while( (j = getopt_long (argc, argv, "hi:o:su:j", long_options, &i)) != -1)
+    while( (j = getopt_long (argc, argv, "hi:o:su:jr", long_options, &i)) != -1)
         switch(j)
         {
             case 'h':
@@ -87,6 +88,7 @@ int main(int argc, char **argv)
                     "    -s, --simulated-annealing       Use stimulated Annealing to find lowest energy\n"
                     "    -j, --jacobi-rotations          Use Jacobi Rotations to find lowest energy\n"
                     "    -u, --unitary                   Use this unitary to calc energy\n"
+                    "    -r, --random                    Use a random unitary as start point\n"
                     "    -h, --help                      Display this help\n"
                     "\n";
                 return 0;
@@ -102,6 +104,9 @@ int main(int argc, char **argv)
                 break;
             case 'j':
                 jacobirots = true;
+                break;
+            case 'r':
+                random = true;
                 break;
             case 'u':
                 unitary = optarg;
@@ -120,12 +125,36 @@ int main(int argc, char **argv)
     setenv("SAVE_H5_PATH", "./", 0);
 
     cout << "Reading: " << integralsfile << endl;
+    Sym_Molecule mol(integralsfile);
+    auto& ham_ints = mol.getHamObject();
+
+    if(random)
+    {
+        if(!unitary.empty())
+            cout << "Overriding the input unitary " << unitary << " with a random unitary!" << endl;
+
+        const simanneal::OptIndex opt(ham_ints);
+
+        simanneal::UnitaryMatrix X(opt);
+        X.fill_random();
+        X.make_skew_symmetric();
+        cout << "U=exp(X), X=" << endl;
+        X.print_unitary();
+
+        simanneal::OrbitalTransform orbtrans(ham_ints);
+        orbtrans.update_unitary(X, false);
+
+        std::string filename = getenv("SAVE_H5_PATH");
+        filename += "/random-start-unitary.h5";
+
+        orbtrans.get_unitary().saveU(filename);
+
+        cout << "Saving random start point to " << filename << endl;
+        unitary = filename;
+    }
 
     if(!simanneal && !jacobirots)
     {
-        Sym_Molecule mol(integralsfile);
-        auto& ham_ints = mol.getHamObject();
-
         if(!unitary.empty())
         {
             cout << "Reading unitary " << unitary << endl;
@@ -179,8 +208,6 @@ int main(int argc, char **argv)
 
     if(simanneal)
     {
-        Sym_Molecule mol(integralsfile);
-
         SimulatedAnnealing opt(mol);
 
         if(!unitary.empty())
@@ -231,8 +258,6 @@ int main(int argc, char **argv)
 
     if(jacobirots)
     {
-        Sym_Molecule mol(integralsfile);
-
         LocalMinimizer opt(mol);
 
         if(!unitary.empty())
