@@ -65,6 +65,8 @@ flags = [
 'extern/include',
 # for omp.h:
 '-isystem',
+'/usr/lib/gcc/x86_64-redhat-linux/4.9.2/include',
+'-isystem',
 '/usr/lib/gcc/x86_64-redhat-linux/4.8.3/include/',
 ]
 
