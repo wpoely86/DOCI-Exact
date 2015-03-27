@@ -227,7 +227,7 @@ int main(int argc, char **argv)
 
         auto end = std::chrono::high_resolution_clock::now();
 
-        cout << "E = " << opt.get_energy() << endl;
+        cout << "The optimal energy is " << opt.get_energy() << std::endl;
 
         cout << "Optimization took: " << std::fixed << std::chrono::duration_cast<std::chrono::duration<double,std::ratio<1>>>(end-start).count() << " s" << endl;
 
@@ -268,7 +268,7 @@ int main(int argc, char **argv)
 
         opt.Minimize();
 
-        cout << "E = " << opt.get_energy() << endl;
+        cout << "The optimal energy is " << opt.get_energy() << std::endl;
 
         DM2 rdm_ham(opt.getHam());
         rdm_ham.BuildHamiltonian(opt.getHam());
