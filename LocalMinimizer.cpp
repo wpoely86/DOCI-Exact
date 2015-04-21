@@ -338,16 +338,23 @@ void doci::LocalMinimizer::Minimize(bool dist_choice)
       new_energy = calc_new_energy();
 
       std::stringstream h5_name;
-      h5_name << getenv("SAVE_H5_PATH") << "/unitary-" << iters << ".h5";
-      orbtrans->get_unitary().saveU(h5_name.str());
 
-      h5_name.str("");
-      h5_name << getenv("SAVE_H5_PATH") << "/ham-" << iters << ".h5";
-      ham2.save2(h5_name.str());
+      if(iters%10==0)
+      {
+         h5_name << getenv("SAVE_H5_PATH") << "/unitary-" << iters << ".h5";
+         orbtrans->get_unitary().saveU(h5_name.str());
+      }
 
-      h5_name.str("");
-      h5_name << getenv("SAVE_H5_PATH") << "/rdm-" << iters << ".h5";
-      rdm->WriteToFile(h5_name.str());
+      if(iters%25==0)
+      {
+         h5_name.str("");
+         h5_name << getenv("SAVE_H5_PATH") << "/ham-" << iters << ".h5";
+         ham2.save2(h5_name.str());
+
+         h5_name.str("");
+         h5_name << getenv("SAVE_H5_PATH") << "/rdm-" << iters << ".h5";
+         rdm->WriteToFile(h5_name.str());
+      }
 
       if(fabs(energy-new_energy)<conv_crit)
          converged++;
