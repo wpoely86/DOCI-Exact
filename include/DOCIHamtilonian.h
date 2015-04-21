@@ -61,7 +61,7 @@ class DOCIHamiltonian
 
       void Diagonalize_arpack(double &energy, std::vector<double> &eigv, bool eigvec) const;
 
-      void Build_iter(Permutation &, helpers::SparseMatrix_CRS &,unsigned int, unsigned int, Molecule &);
+      void Build_iter(Permutation &, helpers::SparseMatrix_CRS &,unsigned long long, unsigned long long, Molecule &);
 
       std::unique_ptr<Permutation> permutations;
 

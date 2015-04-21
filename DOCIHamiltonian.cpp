@@ -118,7 +118,7 @@ void DOCIHamiltonian::Build()
 
    // every thread should process the lines between i and i+1 
    // with i the thread number
-   std::vector<unsigned int> workload(num_t+1);
+   std::vector<unsigned long long> workload(num_t+1);
    workload.front() = 0;
    workload.back() = getdim();
 
@@ -176,11 +176,11 @@ void DOCIHamiltonian::Build()
  * @param i_end the end point of the iterations
  * @param mol the molecule data to use
  */
-void DOCIHamiltonian::Build_iter(Permutation &perm, helpers::SparseMatrix_CRS &mat,unsigned int i_start, unsigned int i_end, Molecule &mol)
+void DOCIHamiltonian::Build_iter(Permutation &perm, helpers::SparseMatrix_CRS &mat,unsigned long long i_start, unsigned long long i_end, Molecule &mol)
 {
    auto &perm_bra = perm;
 
-   for(unsigned int i=i_start;i<i_end;++i)
+   for(auto i=i_start;i<i_end;++i)
    {
       const auto bra = perm_bra.get();
 
@@ -237,7 +237,7 @@ void DOCIHamiltonian::Build_iter(Permutation &perm, helpers::SparseMatrix_CRS &m
 
       Permutation perm_ket(perm_bra);
 
-      for(unsigned int j=i+1;j<getdim();++j)
+      for(auto j=i+1;j<getdim();++j)
       {
          const auto ket = perm_ket.next();
 
