@@ -1,4 +1,4 @@
-/* Copyright (C) 2014  Ward Poelmans
+/* Copyright (C) 2014-2015  Ward Poelmans
 
 This file is part of DOCI-Exact.
 
@@ -42,7 +42,7 @@ along with DOCI-Exact.  If not, see <http://www.gnu.org/licenses/>.
  * The Molecule object holds the atomic/molecular integrals to use.
  *
  * @author Ward Poelmans <wpoely86@gmail.com>
- * @version   0.7
+ * @version   1.0
  * @date      2014-2015
  * @copyright GNU Public License v3
  */
@@ -181,9 +181,14 @@ int main(int argc, char **argv)
 
         start = std::chrono::high_resolution_clock::now();
         auto eig2 = ham.Diagonalize();
+//        auto eig3 = ham.CalcEnergy(5);
         end = std::chrono::high_resolution_clock::now();
 
         cout << "Diagonalization took: " << std::chrono::duration_cast<std::chrono::duration<double,std::ratio<1>>>(end-start).count() << " s" << endl;
+
+//        cout << "Energy levels:" << endl;
+//        for(auto i=0;i<eig3.size();i++)
+//            cout << i << "\t" << eig3[i] + mol.get_nucl_rep() << endl;
 
         cout << "E = " << eig2.first + mol.get_nucl_rep() << endl;
 
