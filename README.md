@@ -18,8 +18,14 @@ for your system.
 Input
 -----
 The program needs molecular integrals from [PSI4](https://github.com/psi4/psi4public). 
-You can extract them using a plugin: https://gist.github.com/wpoely86/99cfad8adcecd7390606 
+You can extract them using a plugin: https://github.com/wpoely86/doci_sdp-atom/blob/master/extern/mointegrals.cc
 
 Documentation
 -------------
-Everything is documented with doxygen. Run `make doc` to build the HTML5 docs.
+Everything is documented with doxygen. Run `make doc` to build the HTML docs.
+Or read the docs [online](http://wpoely86.github.io/DOCI-Exact/). If something
+is unclear, do not hesitate to contact me.
+
+License
+-------
+The code is available under the [GPLv3](https://www.gnu.org/licenses/gpl-3.0.txt) license.
