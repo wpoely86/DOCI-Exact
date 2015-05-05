@@ -216,14 +216,17 @@ void DM2::WriteToFile(std::string filename) const
    herr_t      status;
 
    file_id = H5Fcreate(filename.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
+   HDF5_STATUS_CHECK(file_id);
 
    group_id = H5Gcreate(file_id, "/RDM", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+   HDF5_STATUS_CHECK(group_id);
 
    hsize_t dimblock = block->getn() * block->getn();
 
    dataspace_id = H5Screate_simple(1, &dimblock, NULL);
 
    dataset_id = H5Dcreate(group_id, "Block", H5T_IEEE_F64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+   HDF5_STATUS_CHECK(dataspace_id);
 
    double *data = const_cast<helpers::matrix &>(*block).getpointer();
 
@@ -241,6 +244,7 @@ void DM2::WriteToFile(std::string filename) const
    dataspace_id = H5Screate_simple(1, &dimblock, NULL);
 
    dataset_id = H5Dcreate(group_id, "Vector", H5T_IEEE_F64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+   HDF5_STATUS_CHECK(dataspace_id);
 
    status = H5Dwrite(dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, diag.data());
    HDF5_STATUS_CHECK(status);
