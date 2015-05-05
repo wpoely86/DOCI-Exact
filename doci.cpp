@@ -120,9 +120,15 @@ int main(int argc, char **argv)
         return 2;
     }
 
-    // make sure we have a save path, even if it's not specify already
-    // This will not overwrite an already set SAVE_H5_PATH
-    setenv("SAVE_H5_PATH", "./", 0);
+
+    if(getenv("SAVE_H5_PATH"))
+    {
+        h5name = getenv("SAVE_H5_PATH");
+        h5name += "/rdm.h5";
+    } else 
+        // make sure we have a save path, even if it's not specify already
+        // This will not overwrite an already set SAVE_H5_PATH
+        setenv("SAVE_H5_PATH", "./", 0);
 
     cout << "Reading: " << integralsfile << endl;
     Sym_Molecule mol(integralsfile);
@@ -196,12 +202,9 @@ int main(int argc, char **argv)
         cout << "DM2 Energy = " << rdm.Dot(rdm_ham) + mol.get_nucl_rep() << endl;
         cout << "DM2 Trace = " << rdm.Trace() << endl;
 
-        std::string h5_name = getenv("SAVE_H5_PATH");
-        h5_name += "/rdm.h5";
+        cout << "Writing 2DM to " << h5name << endl;
 
-        cout << "Writing 2DM to " << h5_name << endl;
-
-        rdm.WriteToFile(h5_name);
+        rdm.WriteToFile(h5name);
 
         return 0;
     }
@@ -277,10 +280,8 @@ int main(int argc, char **argv)
         cout << "DM2 Energy = " << rdm.Dot(rdm_ham) + mol.get_nucl_rep() << endl;
         cout << "DM2 Trace = " << rdm.Trace() << endl;
 
-        std::string h5_name = getenv("SAVE_H5_PATH");
-        h5_name += "/rdm.h5";
 
-        cout << "Writing 2DM to " << h5_name << endl;
+        cout << "Writing 2DM to " << h5name << endl;
 
         rdm.WriteToFile(h5name);
     }
