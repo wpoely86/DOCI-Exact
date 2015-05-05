@@ -1,0 +1,7 @@
+<map id="doci::Sym_Molecule::getHamObject" name="doci::Sym_Molecule::getHamObject">
+<area shape="rect" id="node2" href="$de/d0e/DOCI-Exact_2doci_8cpp.html#a3c04138a5bfe5d72780bb7e82a18e627" title="main" alt="" coords="411,118,461,145"/>
+<area shape="rect" id="node3" href="$dc/d4f/classdoci_1_1LocalMinimizer.html#a833faacdeffef2e7bcd89b42bebdf18d" title="doci::LocalMinimizer\l::LocalMinimizer" alt="" coords="207,41,349,83"/>
+<area shape="rect" id="node4" href="$dc/d4f/classdoci_1_1LocalMinimizer.html#adebf9bfba10c0f8407e4daf63248c432" title="doci::LocalMinimizer\l::calc_new_energy" alt="" coords="207,107,349,148"/>
+<area shape="rect" id="node5" href="$d4/d36/classdoci_1_1SimulatedAnnealing.html#a19a093cf4c925a4554ae41f2bc8fe42a" title="doci::SimulatedAnnealing\l::SimulatedAnnealing" alt="" coords="193,172,363,213"/>
+<area shape="rect" id="node6" href="$d4/d36/classdoci_1_1SimulatedAnnealing.html#a65a4afe0bcc4bcec5e68ace5d160e70a" title="doci::SimulatedAnnealing\l::optimize" alt="" coords="193,237,363,279"/>
+</map>

@@ -1,0 +1,8 @@
+<map id="doci::DOCIHamiltonian::DiagonalizeFull" name="doci::DOCIHamiltonian::DiagonalizeFull">
+<area shape="rect" id="node2" href="$db/d2e/classhelpers_1_1SparseMatrix__CRS.html#ab395e9711fcd17ed373f9652ed15042b" title="helpers::SparseMatrix\l_CRS::gn" alt="" coords="223,5,372,47"/>
+<area shape="rect" id="node3" href="$db/d2e/classhelpers_1_1SparseMatrix__CRS.html#a243e93d2da35db3b860f294789527cbe" title="helpers::SparseMatrix\l_CRS::ConvertToMatrix" alt="" coords="216,71,379,112"/>
+<area shape="rect" id="node6" href="$d6/d64/DOCI-Exact_2extern_2include_2Lapack_8h.html#a8868c929c2851d32b2ffa7bc7c3940cf" title="dsyev_" alt="" coords="265,137,329,163"/>
+<area shape="rect" id="node7" href="$df/d63/classhelpers_1_1matrix.html#ab674e62e984f74cc1cfb3d76cd22bcd0" title="helpers::matrix::getpointer" alt="" coords="211,187,384,214"/>
+<area shape="rect" id="node4" href="$df/d63/classhelpers_1_1matrix.html#a522e396f412031aa3f3296402d250234" title="helpers::matrix::getm" alt="" coords="432,53,577,79"/>
+<area shape="rect" id="node5" href="$df/d63/classhelpers_1_1matrix.html#a0077fbef6580f9347e71df3b67ddcd24" title="helpers::matrix::getn" alt="" coords="434,103,575,130"/>
+</map>
