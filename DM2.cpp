@@ -815,4 +815,60 @@ double DM2::calc_rotate(int k, int l, double theta, std::function<double(int,int
    return energy;
 }
 
+/**
+ * Calculate S^2
+ * @return S(S+1) of the current RDM
+ */
+double DM2::S2() const
+{
+   double S2 = 0;
+   auto n_sp = block->getn();
+   auto L = n_sp;
+   auto M = 2*n_sp;
+   auto n_tp = M*(M-1)/2;
+
+    for(int i=0;i<n_tp;++i)
+    {
+        int a = (*tp2sp)(i,0);
+        int b = (*tp2sp)(i,1);
+
+        double s_a = ( 1.0 - 2 * (a / L) )/2;
+        double s_b = ( 1.0 - 2 * (b / L) )/2;
+
+        S2 += ( (1.0 + s_a*s_a + s_b*s_b)/(N - 1.0) + 2*s_a*s_b ) * (*this)(a,b,a,b);
+    }
+
+   for(int a=0;a<L;a++)
+      for(int b=0;b<L;b++)
+         S2 += (*this)(a,L+b,a+L,b);
+
+   return S2;
+}
+
+/**
+ * Calculate Sz
+ * @return Sz of the current RDM
+ */
+double DM2::Sz() const
+{
+   double Sz = 0;
+   auto n_sp = block->getn();
+   auto L = n_sp;
+   auto M = 2*n_sp;
+   auto n_tp = M*(M-1)/2;
+
+    for(int i=0;i<n_tp;++i)
+    {
+        int a = (*tp2sp)(i,0);
+        int b = (*tp2sp)(i,1);
+
+        double s_a = ( 1.0 - 2 * (a / L) )/2;
+        double s_b = ( 1.0 - 2 * (b / L) )/2;
+
+        Sz += 1.0/(N-1.0) * (s_a + s_b) * (*this)(a,b,a,b);
+    }
+
+   return Sz;
+}
+
 /* vim: set ts=3 sw=3 expandtab :*/

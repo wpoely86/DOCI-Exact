@@ -206,6 +206,8 @@ int main(int argc, char **argv)
 
         cout << "DM2 Energy = " << rdm.Dot(rdm_ham) + mol.get_nucl_rep() << endl;
         cout << "DM2 Trace = " << rdm.Trace() << endl;
+        cout << "DM2 S^2 = " << rdm.S2() << endl;
+        cout << "DM2 Sz = " << rdm.Sz() << endl;
 
         cout << "Writing 2DM to " << h5name << endl;
 
@@ -260,6 +262,8 @@ int main(int argc, char **argv)
 
         cout << "DM2 Energy = " << rdm.Dot(rdm_ham) + mol.get_nucl_rep() << endl;
         cout << "DM2 Trace = " << rdm.Trace() << endl;
+        cout << "DM2 S^2 = " << rdm.S2() << endl;
+        cout << "DM2 Sz = " << rdm.Sz() << endl;
 
         rdm.WriteToFile(h5name);
     }
@@ -284,6 +288,8 @@ int main(int argc, char **argv)
 
         cout << "DM2 Energy = " << rdm.Dot(rdm_ham) + mol.get_nucl_rep() << endl;
         cout << "DM2 Trace = " << rdm.Trace() << endl;
+        cout << "DM2 S^2 = " << rdm.S2() << endl;
+        cout << "DM2 Sz = " << rdm.Sz() << endl;
 
 
         cout << "Writing 2DM to " << h5name << endl;

@@ -66,6 +66,10 @@ class DM2
 
       double calc_rotate(int k, int l, double theta, std::function<double(int,int)> &T, std::function<double(int,int,int,int)> &V) const;
 
+      double S2() const;
+
+      double Sz() const;
+
    private:
 
       void build_iter(Permutation& , std::vector<double> &, unsigned int , unsigned int , DM2 &);
