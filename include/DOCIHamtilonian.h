@@ -50,6 +50,8 @@ class DOCIHamiltonian
 
       double CalcEnergy() const;
 
+      std::vector<double> CalcEnergy(int) const;
+
       static unsigned int CountBits(mybitset);
 
       static int CalcSign(unsigned int i,unsigned int j, const mybitset a);

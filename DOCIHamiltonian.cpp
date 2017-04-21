@@ -499,4 +499,111 @@ void DOCIHamiltonian::ReadFromFile(std::string filename)
    mat->ReadFromFile(filename.c_str(), "ham");
 }
 
+/**
+ * Calculate the number lowest energy levels
+ * @param number the number of energy levels to calculate
+ * @return list of the energies
+ */
+std::vector<double> DOCIHamiltonian::CalcEnergy(int number) const
+{
+   // dimension of the matrix
+   int n = mat->gn();
+
+   // number of eigenvalues to calculate
+   int nev = number;
+
+   // reverse communication parameter, must be zero on first iteration
+   int ido = 0;
+   // standard eigenvalue problem A*x=lambda*x
+   char bmat = 'I';
+   // calculate the smallest algebraic eigenvalue
+   char which[] = {'S','A'};
+   // calculate until machine precision
+   double tol = 0;
+
+   // the residual vector
+   std::unique_ptr<double []> resid(new double[n]);
+
+   // the number of columns in v: the number of lanczos vector
+   // generated at each iteration, ncv <= n
+   // We use the answer to life, the universe and everything, if possible
+   int ncv = 42;
+
+   if( n < ncv )
+      ncv = n;
+
+   // v containts the lanczos basis vectors
+   auto ldv = n;
+   std::unique_ptr<double []> v(new double[ldv*ncv]);
+
+   std::unique_ptr<int []> iparam(new int[11]);
+   iparam[0] = 1;   // Specifies the shift strategy (1->exact)
+   iparam[2] = 3*n; // Maximum number of iterations
+   iparam[6] = 1;   /* Sets the mode of dsaupd.
+                       1 is exact shifting,
+                       2 is user-supplied shifts,
+                       3 is shift-invert mode,
+                       4 is buckling mode,
+                       5 is Cayley mode. */
+
+   std::unique_ptr<int []> ipntr(new int[11]); /* Indicates the locations in the work array workd
+                                                  where the input and output vectors in the
+                                                  callback routine are located. */
+
+   // array used for reverse communication
+   std::unique_ptr<double []> workd(new double[3*n]);
+   for(int i=0;i<3*n;i++)
+      workd[i] = 0;
+
+   auto lworkl = ncv*(ncv+8); /* Length of the workl array */
+   std::unique_ptr<double []> workl(new double[lworkl]);
+
+   // info = 0: random start vector is used
+   int info = 0; /* Passes convergence information out of the iteration
+                    routine. */
+
+   // rvec == 0 : calculate only eigenvalue
+   // rvec > 0 : calculate eigenvalue and eigenvector
+   int rvec = 0;
+
+   // how many eigenvectors to calculate: 'A' => nev eigenvectors
+   char howmny = 'A';
+
+   std::unique_ptr<int []> select;
+   // when howmny == 'A', this is used as workspace to reorder the eigenvectors
+   if( howmny == 'A' )
+      select.reset(new int[ncv]);
+
+   // This vector will return the eigenvalues from the second routine, dseupd.
+   std::vector<double> d(nev);
+
+   // not used if iparam[6] == 1
+   double sigma;
+
+   // first iteration
+   dsaupd_(&ido, &bmat, &n, &which[0], &nev, &tol, resid.get(), &ncv, v.get(), &ldv, iparam.get(), ipntr.get(), workd.get(), workl.get(), &lworkl, &info);
+
+   while( ido != 99 )
+   {
+      // matrix-vector multiplication
+      mat->mvprod(workd.get()+ipntr[0]-1, workd.get()+ipntr[1]-1);
+
+      dsaupd_(&ido, &bmat, &n, &which[0], &nev, &tol, resid.get(), &ncv, v.get(), &ldv, iparam.get(), ipntr.get(), workd.get(), workl.get(), &lworkl, &info);
+   }
+
+   if( info < 0 )
+      std::cerr << "Error with dsaupd, info = " << info << std::endl;
+   else if ( info == 1 )
+      std::cerr << "Maximum number of Lanczos iterations reached." << std::endl;
+   else if ( info == 3 )
+      std::cerr << "No shifts could be applied during implicit Arnoldi update, try increasing NCV." << std::endl;
+
+   dseupd_(&rvec, &howmny, select.get(), d.data(), 0, &ldv, &sigma, &bmat, &n, which, &nev, &tol, resid.get(), &ncv, v.get(), &ldv, iparam.get(), ipntr.get(), workd.get(), workl.get(), &lworkl, &info);
+
+   if ( info != 0 )
+      std::cerr << "Error with dseupd, info = " << info << std::endl;
+
+   return d;
+}
+
 /* vim: set ts=3 sw=3 expandtab :*/
