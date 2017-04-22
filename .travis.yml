@@ -1,0 +1,30 @@
+dist: trusty
+language: cpp
+addons:
+  apt:
+    sources:
+    # Clang 3.9
+    - llvm-toolchain-precise-3.9
+    # Newer GCC
+    - ubuntu-toolchain-r-test
+    packages:
+    - libhdf5-serial-dev
+    - liblapack-dev
+    - libarpack2-dev
+    - g++-6
+    - clang-3.9
+matrix:
+  include:
+# disable Clang for now: OpenMP headers give trouble
+#  - os: linux
+#    compiler: clang
+#    env: OUR_CXX='clang++-3.9' OUR_CC='clang-3.9'
+  - os: linux
+    compiler: gcc
+    env: OUR_CXX='g++-6' OUR_CC='gcc-6'
+env:
+    global:
+    # should be limited to 4 on travis
+    - OMP_NUM_THREADS=4
+script:
+    - make CXX=$OUR_CXX CC=$OUR_CC
