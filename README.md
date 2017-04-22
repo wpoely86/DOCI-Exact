@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/wpoely86/DOCI-Exact.svg?branch=master)](https://travis-ci.org/wpoely86/DOCI-Exact)
+
 DOCI Exact
 ==========
 
