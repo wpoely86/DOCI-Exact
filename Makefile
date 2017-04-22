@@ -43,7 +43,11 @@ LIBS=-lblas -llapack -larpack -lhdf5 -Lextern -lsimanneal
 %.o:    %.cpp
 	$(CXX) -c $(CPPFLAGS) $(INCLUDE) $(@:.o=.cpp) -o $@
 
-all: $(EXE)
+all: extern $(EXE)
+
+.PHONY: extern
+extern:
+	$(MAKE) -C extern
 
 $(EXE): $(OBJ) $(EXE).o
 	$(CXX) $(LDFLAGS) -o $(EXE) $(OBJ) $(EXE).o $(LIBS)
