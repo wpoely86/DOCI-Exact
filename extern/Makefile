@@ -7,11 +7,11 @@ OBJ	= $(patsubst %.cpp,%.o,$(CPPSRC))
 INCLUDE = -Iinclude
 
 ifeq ($(origin CC), default)
-    CC = clang
+    CC = gcc
 endif
 
 ifeq ($(origin CXX), default)
-    CXX = clang++
+    CXX = g++
 endif
 
 CFLAGS	= $(INCLUDE) -std=c++11 -g -Wall -O2 -march=native -Wno-unused-variable -fPIC

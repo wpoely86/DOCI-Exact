@@ -25,7 +25,10 @@
 #include <algorithm>
 #include <cstring>
 #include <random>
+
+#ifdef MPI
 #include <mpi.h>
+#endif
 
 #include "MyHDF5.h"
 #include "Lapack.h"
@@ -535,12 +538,14 @@ void UnitaryMatrix::print_unitary() const
  */
 void UnitaryMatrix::sendreceive(int orig)
 {
+#ifdef MPI
     for (int irrep=0; irrep<_index->getNirreps(); irrep++)
     {
         const int linsize = _index->getNORB(irrep);
         const int size = linsize * linsize;
-//        MPI_Bcast(unitary[irrep].get(), size, MPI_DOUBLE, orig, MPI_COMM_WORLD);
+        MPI_Bcast(unitary[irrep].get(), size, MPI_DOUBLE, orig, MPI_COMM_WORLD);
     }
+#endif
 }
 
 
