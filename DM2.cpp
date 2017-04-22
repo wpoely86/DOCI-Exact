@@ -4,6 +4,7 @@
 #include <assert.h>
 #include <omp.h>
 #include <chrono>
+#include <cmath>
 
 #include "DM2.h"
 #include "DOCIHamtilonian.h"
